@@ -3,6 +3,7 @@ package com.richrelevance.stash.plugin;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.stash.event.pull.*;
 import com.atlassian.stash.pull.PullRequest;
+import com.atlassian.stash.repository.Repository;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -21,10 +22,13 @@ public class PullRequestHook {
   // Needs a log4j.properties
   private static final Logger log = LoggerFactory.getLogger(PullRequestHook.class);
 
-  private final String BASEURL = System.getProperty("prhook.baseUrl", "http://localhost/bamboo");
   private final String URL = System.getProperty("prhook.getUrl", "$BASEURL/rest/api/latest/queue/$PLAN?bamboo.variable.prnumber=$PRNUMBER&os_authType=basic");
-  private final String USER = System.getProperty("prhook.getUser", "getUser");
-  private final String PASSWORD = System.getProperty("prhook.getPassword", "getPassword");
+
+  private final PullRequestTriggerSettingsService service;
+
+  public PullRequestHook(PullRequestTriggerSettingsService pullRequestTriggerSettingsService) {
+    this.service = pullRequestTriggerSettingsService;
+  }
 
   @EventListener
   public void onPullRequestOpen(PullRequestOpenedEvent event) {
@@ -45,9 +49,16 @@ public class PullRequestHook {
   }
 
   private void triggerPullRequest(PullRequest pullRequest) {
-    final String url = getUrl(pullRequest);
+    final Repository repository = pullRequest.getToRef().getRepository();
+    final PullRequestTriggerSettings settings = service.getPullRequestTriggerSettings(repository);
+
+    if (!settings.isEnabled())
+      return;
+
+    final String url = getUrl(pullRequest, settings);
+
     if (url != null && !url.isEmpty()) {
-      String authStringEnc = getAuthenticationString();
+      String authStringEnc = getAuthenticationString(settings);
 
       final HttpURLConnection connection;
       try {
@@ -113,18 +124,22 @@ public class PullRequestHook {
     }
   }
 
-  private String getUrl(PullRequest pullRequest) {
+  private String getUrl(PullRequest pullRequest, PullRequestTriggerSettings settings) {
     final Long prNumber = pullRequest.getId();
+    final String baseURL = settings.getUrl();
+
     if (prNumber != null) {
-      return URL.replace("$BASEURL", BASEURL).replace("$PLAN", urlEncode("RRCORE-PRTEST")).replace("$PRNUMBER", prNumber.toString());
+      return URL.replace("$BASEURL", baseURL).replace("$PLAN", urlEncode("RRCORE-PRTEST")).replace("$PRNUMBER", prNumber.toString());
     } else {
       log.error("id of pull request is null:" + pullRequest);
       return "";
     }
   }
 
-  private String getAuthenticationString() {
-    final String authString = USER + ":" + PASSWORD;
+  private String getAuthenticationString(PullRequestTriggerSettings settings) {
+    final String user = settings.getUser();
+    final String password = settings.getPassword();
+    final String authString = user + ":" + password;
     final byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
     return new String(authEncBytes);
   }
