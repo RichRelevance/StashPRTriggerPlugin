@@ -42,10 +42,19 @@ public class PullRequestHook {
 
   @EventListener
   public void onPullRequestRescope(PullRequestRescopedEvent event) {
+    final String previousHash = event.getPreviousFromHash();
+    final String currentHash = event.getPullRequest().getFromRef().getLatestChangeset();
+
+    if (!previousHash.equals(currentHash))
+      triggerPullRequest(event.getPullRequest());
   }
 
   @EventListener
   public void onPullRequestComment(PullRequestCommentAddedEvent event) {
+    String comment = event.getComment().getText();
+
+    if (comment.contains("Retest this please"))
+      triggerPullRequest(event.getPullRequest());
   }
 
   private void triggerPullRequest(PullRequest pullRequest) {
@@ -54,6 +63,8 @@ public class PullRequestHook {
 
     if (!settings.isEnabled())
       return;
+
+    log.info("Triggering build for pull request " + pullRequest);
 
     final String url = getUrl(pullRequest, settings);
 
