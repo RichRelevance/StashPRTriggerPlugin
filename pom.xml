@@ -10,13 +10,20 @@
     <version>1.0-SNAPSHOT</version>
 
     <organization>
-        <name>Example Company</name>
-        <url>http://www.example.com/</url>
+        <name>Rich Relevance</name>
+        <url>http://www.richrelevance.com/</url>
     </organization>
 
     <name>prTrigger</name>
     <description>This is the com.richrelevance.stash.plugin:prTrigger plugin for Atlassian Stash.</description>
     <packaging>atlassian-plugin</packaging>
+
+    <properties>
+        <stash.version>2.5.2</stash.version>
+        <stash.data.version>2.5.2</stash.data.version>
+        <amps.version>4.2.3</amps.version>
+        <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -47,15 +54,29 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>com.atlassian.stash</groupId>
+            <artifactId>stash-rest-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-webresource</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.soy</groupId>
+            <artifactId>soy-template-renderer-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
@@ -63,9 +84,15 @@
             <version>2.6</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- WIRED TEST RUNNER DEPENDENCIES -->
@@ -116,12 +143,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <stash.version>2.5.2</stash.version>
-        <stash.data.version>2.5.2</stash.data.version>
-        <amps.version>4.2.3</amps.version>
-        <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
-    </properties>
 
 </project>

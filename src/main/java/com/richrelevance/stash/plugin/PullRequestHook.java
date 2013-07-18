@@ -22,9 +22,9 @@ public class PullRequestHook {
   private static final Logger log = LoggerFactory.getLogger(PullRequestHook.class);
 
   private final String BASEURL = System.getProperty("prhook.baseUrl", "http://localhost/bamboo");
-  private final String URL = System.getProperty("prhook.url", "$BASEURL/rest/api/latest/queue/$PLAN?bamboo.variable.prnumber=$PRNUMBER&os_authType=basic");
-  private final String USER = System.getProperty("prhook.user", "user");
-  private final String PASSWORD = System.getProperty("prhook.password", "password");
+  private final String URL = System.getProperty("prhook.getUrl", "$BASEURL/rest/api/latest/queue/$PLAN?bamboo.variable.prnumber=$PRNUMBER&os_authType=basic");
+  private final String USER = System.getProperty("prhook.getUser", "getUser");
+  private final String PASSWORD = System.getProperty("prhook.getPassword", "getPassword");
 
   @EventListener
   public void onPullRequestOpen(PullRequestOpenedEvent event) {
@@ -109,7 +109,7 @@ public class PullRequestHook {
         log.error("unable to get POST response", e);
       }
     } else {
-      log.error("empty trigger url");
+      log.error("empty trigger getUrl");
     }
   }
 
