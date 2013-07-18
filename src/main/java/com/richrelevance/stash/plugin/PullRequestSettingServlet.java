@@ -51,7 +51,7 @@ public class PullRequestSettingServlet extends HttpServlet {
     }
     String projectKey = pathParts[0];
     String repoSlug = pathParts[1];
-    Repository repository = repositoryService.findBySlug(projectKey, repoSlug);
+    Repository repository = repositoryService.getBySlug(projectKey, repoSlug);
     if (repository == null) {
       resp.sendError(HttpServletResponse.SC_NOT_FOUND);
       return;
