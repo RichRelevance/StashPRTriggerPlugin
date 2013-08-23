@@ -1,4 +1,4 @@
-package com.richrelevance.stash.plugin;
+package com.richrelevance.stash.plugin.settings;
 
 /**
  */

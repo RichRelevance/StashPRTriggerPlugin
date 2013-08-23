@@ -32,7 +32,7 @@
         <link>${navBuilder.pluginServlets().path('pullrequest-trigger-settings', $project.key, $repository.slug).buildRelNoContext()}</link>
     </web-item>
 
-    <servlet key="pullrequest-trigger-settings-servlet" class="com.richrelevance.stash.plugin.PullRequestSettingServlet">
+    <servlet key="pullrequest-trigger-settings-servlet" class="com.richrelevance.stash.plugin.settings.PullRequestSettingServlet">
         <url-pattern>/pullrequest-trigger-settings/*</url-pattern>
     </servlet>
 
@@ -50,7 +50,7 @@
 
     <!-- publish our component -->
     <component key="pullRequestTriggerService" class="com.richrelevance.stash.plugin.PullRequestHook" />
-    <component key="pullRequestTriggerSettingsService" class="com.richrelevance.stash.plugin.DefaultPullRequestTriggerSettingsService"/>
+    <component key="pullRequestTriggerSettingsService" class="com.richrelevance.stash.plugin.settings.DefaultPullRequestTriggerSettingsService"/>
 
     <!-- import from the product container -->
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />

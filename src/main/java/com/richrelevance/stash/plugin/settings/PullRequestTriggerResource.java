@@ -1,4 +1,13 @@
-package com.richrelevance.stash.plugin;
+package com.richrelevance.stash.plugin.settings;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import com.atlassian.plugins.rest.common.interceptor.InterceptorChain;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
@@ -9,12 +18,10 @@ import com.atlassian.stash.rest.util.ResourcePatterns;
 import com.atlassian.stash.rest.util.ResponseFactory;
 import com.atlassian.stash.rest.util.RestResource;
 import com.atlassian.stash.rest.util.RestUtils;
+import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
+import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService;
+import com.richrelevance.stash.plugin.settings.RestPullRequestTriggerSettings;
 import com.sun.jersey.spi.resource.Singleton;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @AnonymousAllowed
 @Consumes({MediaType.APPLICATION_JSON})

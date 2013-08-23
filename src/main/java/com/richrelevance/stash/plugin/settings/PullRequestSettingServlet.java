@@ -1,4 +1,12 @@
-package com.richrelevance.stash.plugin;
+package com.richrelevance.stash.plugin.settings;
+
+import java.io.IOException;
+import java.util.Map;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
@@ -9,13 +17,9 @@ import com.atlassian.stash.user.Permission;
 import com.atlassian.stash.user.PermissionValidationService;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Map;
+import com.richrelevance.stash.plugin.PluginMetadata;
+import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
+import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService;
 
 public class PullRequestSettingServlet extends HttpServlet {
 

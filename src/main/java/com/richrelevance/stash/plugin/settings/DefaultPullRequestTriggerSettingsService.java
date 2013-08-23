@@ -1,4 +1,10 @@
-package com.richrelevance.stash.plugin;
+package com.richrelevance.stash.plugin.settings;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
@@ -7,11 +13,8 @@ import com.atlassian.stash.user.Permission;
 import com.atlassian.stash.user.PermissionValidationService;
 import com.google.common.base.Function;
 import com.google.common.collect.MapMaker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.richrelevance.stash.plugin.PluginMetadata;
+import com.richrelevance.stash.plugin.PullRequestHook;
 
 public class DefaultPullRequestTriggerSettingsService implements PullRequestTriggerSettingsService {
   // add log4j.logger.attlassian.plugin=DEBUG  to stash-config.properties on Stash home directory to use this logger
