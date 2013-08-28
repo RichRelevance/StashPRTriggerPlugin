@@ -1,6 +1,8 @@
 package com.richrelevance.stash.plugin.settings;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -70,6 +72,18 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     pluginSettings.put(Integer.toString(repository.getId()), data);
     cache.remove(repository.getId());
     return deserialize(data);
+  }
+
+  @Override
+  public List<BranchSettings> getBranchSettings(Repository repository) {
+    permissionValidationService.validateForRepository(repository, Permission.REPO_READ);
+    return new ArrayList<BranchSettings>();
+  }
+
+  @Override
+  public void setBranch(Repository repository, String name, BranchSettings settings) {
+    permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
+    //To change body of implemented methods use File | Settings | File Templates.
   }
 
   private Map<String, String> serialize(PullRequestTriggerSettings settings) {

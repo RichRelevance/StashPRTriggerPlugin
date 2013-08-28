@@ -13,7 +13,10 @@
 
     <!-- add our web resources -->
     <web-resource key="prTrigger-resources" name="prTrigger Web Resources">
+        <dependency>com.atlassian.auiplugin:ajs</dependency>
+
         <resource type="download" name="images/" location="/images"/>
+
         <context>prTrigger</context>
     </web-resource>
 
@@ -32,21 +35,9 @@
         <link>${navBuilder.pluginServlets().path('pullrequest-trigger-settings', $project.key, $repository.slug).buildRelNoContext()}</link>
     </web-item>
 
-    <servlet key="pullrequest-trigger-settings-servlet" class="com.richrelevance.stash.plugin.settings.PullRequestSettingServlet">
+    <servlet key="pullrequest-trigger-settings-servlet" class="com.richrelevance.stash.plugin.admin.PullRequestSettingServlet">
         <url-pattern>/pullrequest-trigger-settings/*</url-pattern>
     </servlet>
-
-    <!-- rest services are used by the web component as well -->
-    <rest key="pullrequest-trigger-settings-rest" path="/pullrequest-trigger-settings" version="1.0">
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-        <init-param>
-            <param-name>extension.filter.excludes</param-name>
-            <param-value>.*</param-value>
-        </init-param>
-        <package>com.richrelevance.stash.plugin</package>
-    </rest>
-
 
     <!-- publish our component -->
     <component key="pullRequestTriggerService" class="com.richrelevance.stash.plugin.PullRequestHook" />

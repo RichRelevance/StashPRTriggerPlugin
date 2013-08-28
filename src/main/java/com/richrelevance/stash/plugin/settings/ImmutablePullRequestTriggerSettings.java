@@ -18,7 +18,8 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
     this.plan = "plan";
   }
 
-  public ImmutablePullRequestTriggerSettings(boolean enabled, @Nonnull String url, @Nonnull String user, @Nonnull String password, @Nonnull String plan) {
+  public ImmutablePullRequestTriggerSettings(boolean enabled, @Nonnull String url, @Nonnull String user,
+                                             @Nonnull String password, @Nonnull String plan) {
     this.enabled = enabled;
     this.url = url;
     this.user = user;
@@ -26,22 +27,27 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
     this.plan = plan;
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
+  @Override
   public String getUrl() {
     return url;
   }
 
+  @Override
   public String getUser() {
     return user;
   }
 
+  @Override
   public String getPassword() {
     return password;
   }
 
+  @Override
   public String getPlan() {
     return plan;
   }

@@ -3,6 +3,7 @@
 /**
  * @param repository
  * @param prTriggerSettings
+ * @param branchSettings
  **/
 {template .viewPullRequestTriggerSettings}
 <!DOCTYPE html>
@@ -20,98 +21,120 @@
                 <h2>{stash_i18n('stash.web.pullrequest.trigger.settings.heading', 'PR Trigger')}</h2>
             {/param}
         {/call}
-        {call aui.form.form}
-            {param action: '' /}
+        {call aui.group.group}
             {param content}
-                {call aui.form.field}
-                    {param type: 'checkbox' /}
-                    {param id: 'enabled' /}
-                    {param labelContent: 'Enabled' /}
-                    {param isChecked: $prTriggerSettings.enabled /}
-                    {param descriptionText: 'Enable Bamboo Trigger for this Repository?' /}
-                {/call}
-                {call aui.form.textField}
-                    {param id: 'url' /}
-                    {param value: $prTriggerSettings['url'] /}
-                    {param labelContent: 'URL' /}
-                    {param descriptionText: 'Bamboo Base URL' /}
-                    {param isRequired: true /}
-                {/call}
-                {call aui.form.textField}
-                    {param id: 'user' /}
-                    {param value: $prTriggerSettings['user'] /}
-                    {param labelContent: 'User' /}
-                    {param descriptionText: 'Bamboo REST API User' /}
-                    {param isRequired: true /}
-                {/call}
-                {call aui.form.passwordField}
-                    {param id: 'password' /}
-                    {param value: $prTriggerSettings['password'] /}
-                    {param labelContent: 'Password' /}
-                    {param descriptionText: 'Bamboo REST API Password' /}
-                    {param isRequired: true /}
-                {/call}
-                {call aui.form.textField}
-                    {param id: 'plan' /}
-                    {param value: $prTriggerSettings['plan'] /}
-                    {param labelContent: 'Plan' /}
-                    {param descriptionText: 'Bamboo Build Plan (PROJ-PLAN)' /}
-                    {param isRequired: true /}
-                {/call}
-                {call aui.form.submit}
-                    {param id: 'submit-form' /}
-                    {param name: 'save' /}
-                    {param value: 'save' /}
+                {call aui.group.item}
+                    {param content}
+                        {call aui.form.form}
+                        {param action: '' /}
+                        {param isLongLabels: true /}
+                        {param content}
+                            {call aui.form.checkboxField}
+                              {param legendContent: 'Enable Bamboo Build Trigger?' /}
+                              {param fields: [[
+                                'id': 'enabled',
+                                'labelText': 'Enabled',
+                                'isChecked': $prTriggerSettings.enabled
+                                ]] /}
+                            {/call}
+                            {call aui.form.textField}
+                                {param id: 'url' /}
+                                {param value: $prTriggerSettings['url'] /}
+                                {param labelContent: 'URL' /}
+                                {param descriptionText: 'Bamboo Base URL' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.textField}
+                                {param id: 'user' /}
+                                {param value: $prTriggerSettings['user'] /}
+                                {param labelContent: 'User' /}
+                                {param descriptionText: 'Bamboo REST API User' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.passwordField}
+                                {param id: 'password' /}
+                                {param value: $prTriggerSettings['password'] /}
+                                {param labelContent: 'Password' /}
+                                {param descriptionText: 'Bamboo REST API Password' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.textField}
+                                {param id: 'plan' /}
+                                {param value: $prTriggerSettings['plan'] /}
+                                {param labelContent: 'Plan' /}
+                                {param descriptionText: 'Bamboo Build Plan (PROJ-PLAN)' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.buttons}
+                                {param content}
+                                    {call aui.form.submit}
+                                        {param id: 'submit' /}
+                                        {param name: 'submit-button' /}
+                                        {param text: 'Save' /}
+                                    {/call}
+                                    {call aui.form.submit}
+                                        {param id: 'cancel' /}
+                                        {param name: 'submit-button' /}
+                                        {param text: 'Cancel' /}
+                                    {/call}
+                                {/param}
+                            {/call}
+                        {/param}
+                    {/call}
+                    {/param}
                 {/call}
             {/param}
         {/call}
-        <script>
-{literal}
-(function($, _) {
+        {call aui.group.group}
+            {param content}
+                {if length($branchSettings) > 0}
+                    {call aui.group.item}
+                        {param content}
+                            {foreach $branch in $branchSettings}
+                                <h3>{$branch.name}</h3>
+                            {/foreach}
+                        {/param}
+                    {/call}
+                {/if}
+                {call aui.group.item}
+                {param content}
+                    <h3>New Repository</h3>
+                    {call aui.form.form}
+                        {param action: '' /}
+                        {param content}
+                            {call aui.form.textField}
+                                {param id: 'name' /}
+                                {param labelContent: 'Branch' /}
+                                {param descriptionText: 'Repository Branch Branch' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.textField}
+                                {param id: 'plan' /}
+                                {param labelContent: 'Plan' /}
+                                {param descriptionText: 'Bamboo Build Plan (PROJ-PLAN)' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.buttons}
+                                {param content}
+                                    {call aui.form.submit}
+                                        {param id: 'add' /}
+                                        {param name: 'submit-button' /}
+                                        {param text: 'Add' /}
+                                    {/call}
+                                    {call aui.form.submit}
+                                        {param id: 'cancel-branch' /}
+                                        {param name: 'submit-button' /}
+                                        {param text: 'Cancel' /}
+                                    {/call}
+                                {/param}
+                            {/call}
+                        {/param}
+                    {/call}
+                {/param}
+            {/call}
+            {/param}
+        {/call}
 
-var createSave = function(ajax, pageState) {
-    return function(payload) {
-        return ajax.rest({
-            url : AJS.contextPath() + '/rest/pullrequest-trigger-settings/latest/projects/' + pageState.getProject().key + '/repos/' + pageState.getRepository().slug + '/pullrequest-trigger-settings',
-            type: 'PUT',
-            data: payload
-        });
-    };
-};
-
-var save = function(payload) {
-    save = createSave(require('util/ajax'), require('model/page-state'));
-    return save(payload);
-};
-
-
-AJS.$(function(){
-  AJS.$("#submit-form").click(function(e){
-    e.preventDefault();
-    var payload = {
-      enabled : AJS.$("#enabled").is(':checked'),
-      url     : AJS.$("#url").attr("value"),
-      user    : AJS.$("#user").attr("value"),
-      password: AJS.$("#password").attr("value"),
-      plan    : AJS.$("#plan").attr("value")
-    };
-    save(payload);
-  });
-});
-
-/*$(document).on('change', '.content-body input.checkbox', function(e) {
-    e.preventDefault();
-    var payload = _.reduce($('.content-body input.checkbox').toArray(), function(memo, el) {
-        var $el = $(el);
-        memo[$el.attr('id')] =  $el.is(':checked');
-        return memo;
-    }, {});
-    save(payload);
-});*/
-
-})(AJS.$, _);
-{/literal}
-        </script>
     </body>
 </html>
 {/template}

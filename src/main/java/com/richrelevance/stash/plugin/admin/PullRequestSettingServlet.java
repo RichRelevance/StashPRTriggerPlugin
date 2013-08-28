@@ -1,4 +1,4 @@
-package com.richrelevance.stash.plugin.settings;
+package com.richrelevance.stash.plugin.admin;
 
 import java.io.IOException;
 import java.util.Map;
@@ -16,8 +16,13 @@ import com.atlassian.stash.repository.RepositoryService;
 import com.atlassian.stash.user.Permission;
 import com.atlassian.stash.user.PermissionValidationService;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.richrelevance.stash.plugin.PluginMetadata;
+import com.richrelevance.stash.plugin.settings.BranchSettings;
+import com.richrelevance.stash.plugin.settings.ImmutableBranchSettings;
+import com.richrelevance.stash.plugin.settings.ImmutablePullRequestTriggerSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService;
 
@@ -26,13 +31,14 @@ public class PullRequestSettingServlet extends HttpServlet {
   private final PermissionValidationService permissionValidationService;
   private final PullRequestTriggerSettingsService pullRequestTriggerSettingsService;
   private final RepositoryService repositoryService;
+  @SuppressWarnings("deprecation")
   private final WebResourceManager webResourceManager;
   private final SoyTemplateRenderer soyTemplateRenderer;
 
   public PullRequestSettingServlet(PermissionValidationService permissionValidationService,
                                    PullRequestTriggerSettingsService pullRequestTriggerSettingsService,
                                    RepositoryService repositoryService,
-                                   WebResourceManager webResourceManager,
+                                   @SuppressWarnings("deprecation") WebResourceManager webResourceManager,
                                    SoyTemplateRenderer soyTemplateRenderer) {
     this.permissionValidationService = permissionValidationService;
     this.pullRequestTriggerSettingsService = pullRequestTriggerSettingsService;
@@ -43,35 +49,94 @@ public class PullRequestSettingServlet extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-    String pathInfo = req.getPathInfo();
-    if (Strings.isNullOrEmpty(pathInfo) || pathInfo.equals("/")) {
+    Repository repository = getRepository(req);
+    if (repository != null) {
+      doView(repository, resp);
+    } else {
       resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+    }
+  }
+
+  @Override
+  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    Repository repository = getRepository(req);
+    if (repository == null) {
+      resp.sendError(404);
       return;
+    }
+    if (!saveSettings(req, repository)) {
+      resp.sendError(404);
+    }
+    doGet(req, resp);
+  }
+
+  private boolean saveSettings(HttpServletRequest req, Repository repository) {
+    String button = req.getParameter("submit-button") == null ? "" : req.getParameter("submit-button");
+
+    if (button.equals("Save")) {
+      saveGeneralSettings(req, repository);
+    } else if (button.equals("Add")) {
+      addBranch(req, repository);
+    } else if (button.equals("Cancel")) {
+      // Do nothing -- we are not saving settings
+    } else {
+      return false;
+    }
+
+    return true;
+  }
+
+  private void addBranch(HttpServletRequest req, Repository repository) {
+    String name = req.getParameter("name");
+    String plan = req.getParameter("plan");
+
+    BranchSettings settings = new ImmutableBranchSettings(name, plan);
+
+    pullRequestTriggerSettingsService.setBranch(repository, name, settings);
+  }
+
+  private void saveGeneralSettings(HttpServletRequest req, Repository repository) {
+    Boolean enabled = (req.getParameter("enabled") == null) ? false : true;
+    String url = req.getParameter("url");
+    String user = req.getParameter("user");
+    String password = req.getParameter("password");
+    String plan = req.getParameter("plan");
+
+    PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings(enabled, url, user, password, plan);
+
+    pullRequestTriggerSettingsService.setPullRequestTriggerSettings(repository, settings);
+  }
+
+  private Repository getRepository(HttpServletRequest req) {
+    String pathInfo = req.getPathInfo();
+    if (!isPathValid(pathInfo)) {
+      return null;
     }
     String[] pathParts = pathInfo.substring(1).split("/");
     if (pathParts.length != 2) {
-      resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-      return;
+      return null;
     }
+
     String projectKey = pathParts[0];
     String repoSlug = pathParts[1];
-    Repository repository = repositoryService.getBySlug(projectKey, repoSlug);
-    if (repository == null) {
-      resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-      return;
-    }
-    doView(repository, req, resp);
 
+    return repositoryService.getBySlug(projectKey, repoSlug);
   }
 
-  private void doView(Repository repository, HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+  private boolean isPathValid(String pathInfo) {
+    return !(Strings.isNullOrEmpty(pathInfo) || pathInfo.equals("/"));
+  }
+
+  private void doView(Repository repository, HttpServletResponse resp) throws ServletException, IOException {
     permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
     PullRequestTriggerSettings pullRequestTriggerSettings = pullRequestTriggerSettingsService.getPullRequestTriggerSettings(repository);
+    ImmutableCollection<BranchSettings> branchSettings = ImmutableList.copyOf(pullRequestTriggerSettingsService.getBranchSettings(repository));
     render(resp,
       "stash.page.pullrequest.trigger.settings.viewPullRequestTriggerSettings",
       ImmutableMap.<String, Object>builder()
         .put("repository", repository)
         .put("prTriggerSettings", pullRequestTriggerSettings)
+        .put("branchSettings", branchSettings)
         .build()
     );
   }
