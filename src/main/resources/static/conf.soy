@@ -91,7 +91,46 @@
                     {call aui.group.item}
                         {param content}
                             {foreach $branch in $branchSettings}
-                                <h3>{$branch.name}</h3>
+                                <h3>Branch {$branch.name}</h3>
+                                {call aui.form.form}
+                                    {param action: '' /}
+                                    {param content}
+                                        {call aui.form.textField}
+                                            {param id: 'plan' /}
+                                            {param labelContent: 'Plan' /}
+                                            {param value: $branch.plan /}
+                                            {param descriptionText: 'Bamboo Build Plan (PROJ-PLAN)' /}
+                                            {param isRequired: true /}
+                                        {/call}
+                                        {call aui.form.textField}
+                                            {param id: 'name' /}
+                                            {param labelContent: 'Branch' /}
+                                            {param value: $branch.name /}
+                                            {param descriptionText: 'Repository Branch Branch' /}
+                                            {param isRequired: true /}
+                                            {param extraClasses: 'hidden' /}
+                                        {/call}
+                                        {call aui.form.buttons}
+                                            {param content}
+                                                {call aui.form.submit}
+                                                    {param id: 'update' /}
+                                                    {param name: 'submit-button' /}
+                                                    {param text: 'Update' /}
+                                                {/call}
+                                                {call aui.form.submit}
+                                                    {param id: 'delete' /}
+                                                    {param name: 'submit-button' /}
+                                                    {param text: 'Delete' /}
+                                                {/call}
+                                                {call aui.form.submit}
+                                                    {param id: 'cancel-branch' /}
+                                                    {param name: 'submit-button' /}
+                                                    {param text: 'Cancel' /}
+                                                {/call}
+                                            {/param}
+                                        {/call}
+                                    {/param}
+                                {/call}
                             {/foreach}
                         {/param}
                     {/call}
@@ -122,7 +161,7 @@
                                         {param text: 'Add' /}
                                     {/call}
                                     {call aui.form.submit}
-                                        {param id: 'cancel-branch' /}
+                                        {param id: 'cancel-add' /}
                                         {param name: 'submit-button' /}
                                         {param text: 'Cancel' /}
                                     {/call}

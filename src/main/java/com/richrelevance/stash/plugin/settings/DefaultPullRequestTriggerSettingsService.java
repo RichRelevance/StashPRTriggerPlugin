@@ -19,19 +19,17 @@ import com.richrelevance.stash.plugin.PluginMetadata;
 import com.richrelevance.stash.plugin.PullRequestHook;
 
 public class DefaultPullRequestTriggerSettingsService implements PullRequestTriggerSettingsService {
-  // add log4j.logger.attlassian.plugin=DEBUG  to stash-config.properties on Stash home directory to use this logger
-  // private static final Logger log = LoggerFactory.getLogger("atlassian.plugin");
-
   // Needs a log4j.properties
   private static final Logger log = LoggerFactory.getLogger(PullRequestHook.class);
-
   static final ImmutablePullRequestTriggerSettings DEFAULT_SETTINGS = new ImmutablePullRequestTriggerSettings();
 
+  private static final String KEY_BRANCH_NAME = "name";
   private static final String KEY_ENABLED = "enabled";
   private static final String KEY_URL = "url";
   private static final String KEY_USER = "user";
   private static final String KEY_PASSWORD = "password";
   private static final String KEY_PLAN = "plan";
+  private static final String BRANCH_LIST = "branchList:";
 
   private final PermissionValidationService permissionValidationService;
 
@@ -43,6 +41,28 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
           return deserialize(data);
         }
         return DEFAULT_SETTINGS;
+      }
+    });
+
+  private final Map<Integer, List<String>> branchListCache = new MapMaker()
+    .makeComputingMap(new Function<Integer, List<String>>() {
+      public List<String> apply(Integer repoId) {
+        List<String> data = (List<String>) pluginSettings.get(BRANCH_LIST +repoId.toString());
+        if (data != null) {
+          return data;
+        }
+        return new ArrayList<String>();
+      }
+    });
+
+  private final Map<String, BranchSettings> branchCache = new MapMaker()
+    .makeComputingMap(new Function<String, BranchSettings>() {
+      public BranchSettings apply(String branchAndRepo) {
+        Map<String, String> data = (Map<String, String>) pluginSettings.get(branchAndRepo);
+        if (data != null) {
+          return deserializeBranch(data);
+        }
+        return null;
       }
     });
 
@@ -77,13 +97,57 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   @Override
   public List<BranchSettings> getBranchSettings(Repository repository) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_READ);
-    return new ArrayList<BranchSettings>();
+    final List<String> branches = branchListCache.get(repository.getId());
+    final List<BranchSettings> branchSettings = new ArrayList<BranchSettings>();
+    for (String branch : branches) {
+      BranchSettings settings = branchCache.get(branchKeyForRepoId(repository, branch));
+      if (settings != null) {
+        branchSettings.add(settings);
+      }
+    }
+    return branchSettings;
   }
 
   @Override
-  public void setBranch(Repository repository, String name, BranchSettings settings) {
+  public void setBranch(Repository repository, String branchName, BranchSettings settings) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
-    //To change body of implemented methods use File | Settings | File Templates.
+    final String branchKey = branchKeyForRepoId(repository, branchName);
+    final List<String> branches = branchListCache.get(repository.getId());
+    if (!branches.contains(branchName)) {
+      branches.add(branchName);
+      System.err.println(String.format("Updating %s with list %s (added (%s)", BRANCH_LIST + repository.getId().toString(),
+        branches, branchName));
+      log.info(String.format("Updating %s with list %s (added (%s)", BRANCH_LIST + repository.getId().toString(), branches, branchName));
+      pluginSettings.put(BRANCH_LIST + repository.getId().toString(), branches);
+      branchListCache.remove(repository.getId().toString());
+    }
+    final Map<String, String> data;
+    try {
+      data = serializeBranch(settings);
+    } catch (NullPointerException e) {
+      log.error("Error serializing PR branch settings object " + settings, e);
+      throw e;
+    }
+    pluginSettings.put(branchKey, data);
+    branchCache.remove(branchKey);
+  }
+
+  @Override
+  public void deleteBranch(Repository repository, String branchName) {
+    permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
+    final String branchKey = branchKeyForRepoId(repository, branchName);
+    final List<String> branches = branchListCache.get(repository.getId());
+    if (branches.contains(branchName)) {
+      branches.remove(branchName);
+      pluginSettings.remove(BRANCH_LIST + repository.getId().toString());
+      branchListCache.remove(repository.getId().toString());
+    }
+    pluginSettings.remove(branchKey);
+    branchCache.remove(branchKey);
+  }
+
+  private String branchKeyForRepoId(Repository repository, String branch) {
+    return branch + ":" + repository.getId().toString();
   }
 
   private Map<String, String> serialize(PullRequestTriggerSettings settings) {
@@ -102,6 +166,20 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
       settings.get(KEY_URL),
       settings.get(KEY_USER),
       settings.get(KEY_PASSWORD),
+      settings.get(KEY_PLAN)
+    );
+  }
+
+  private Map<String, String> serializeBranch(BranchSettings settings) {
+    Map<String, String> data = new HashMap<String, String>();
+    data.put(KEY_BRANCH_NAME, settings.getName());
+    data.put(KEY_PLAN, settings.getPlan());
+    return data;
+  }
+
+  private BranchSettings deserializeBranch(Map<String, String> settings) {
+    return new ImmutableBranchSettings(
+      settings.get(KEY_BRANCH_NAME),
       settings.get(KEY_PLAN)
     );
   }

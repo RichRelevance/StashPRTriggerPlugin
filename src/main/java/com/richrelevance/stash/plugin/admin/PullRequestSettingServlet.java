@@ -77,6 +77,10 @@ public class PullRequestSettingServlet extends HttpServlet {
       saveGeneralSettings(req, repository);
     } else if (button.equals("Add")) {
       addBranch(req, repository);
+    } else if (button.equals("Update")) {
+      saveBranch(req, repository);
+    } else if (button.equals("Delete")) {
+      deleteBranch(req, repository);
     } else if (button.equals("Cancel")) {
       // Do nothing -- we are not saving settings
     } else {
@@ -93,6 +97,17 @@ public class PullRequestSettingServlet extends HttpServlet {
     BranchSettings settings = new ImmutableBranchSettings(name, plan);
 
     pullRequestTriggerSettingsService.setBranch(repository, name, settings);
+  }
+
+  private void saveBranch(HttpServletRequest req, Repository repository) {
+    System.err.println(String.format("Update received with parameters %s", req.getParameterMap()));
+    addBranch(req, repository); // adding and saving have the same result
+  }
+
+  private void deleteBranch(HttpServletRequest req, Repository repository) {
+    String name = req.getParameter("name");
+
+    pullRequestTriggerSettingsService.deleteBranch(repository, name);
   }
 
   private void saveGeneralSettings(HttpServletRequest req, Repository repository) {
