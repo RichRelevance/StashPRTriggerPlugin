@@ -2,11 +2,16 @@ package com.richrelevance.stash.plugin.admin;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.plugin.webresource.WebResourceManager;
 import com.atlassian.soy.renderer.SoyException;
@@ -27,6 +32,8 @@ import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService;
 
 public class PullRequestSettingServlet extends HttpServlet {
+  // Needs a log4j.properties
+  private static final Logger log = LoggerFactory.getLogger(PullRequestSettingServlet.class);
 
   private final PermissionValidationService permissionValidationService;
   private final PullRequestTriggerSettingsService pullRequestTriggerSettingsService;
@@ -71,7 +78,7 @@ public class PullRequestSettingServlet extends HttpServlet {
   }
 
   private boolean saveSettings(HttpServletRequest req, Repository repository) {
-    String button = req.getParameter("submit-button") == null ? "" : req.getParameter("submit-button");
+    String button = req.getParameter("submit-button") != null ? req.getParameter("submit-button") : "";
 
     if (button.equals("Save")) {
       saveGeneralSettings(req, repository);
@@ -81,9 +88,7 @@ public class PullRequestSettingServlet extends HttpServlet {
       saveBranch(req, repository);
     } else if (button.equals("Delete")) {
       deleteBranch(req, repository);
-    } else if (button.equals("Cancel")) {
-      // Do nothing -- we are not saving settings
-    } else {
+    } else if (!button.equals("Cancel")) {
       return false;
     }
 
@@ -91,8 +96,13 @@ public class PullRequestSettingServlet extends HttpServlet {
   }
 
   private void addBranch(HttpServletRequest req, Repository repository) {
-    String name = req.getParameter("name");
-    String plan = req.getParameter("plan");
+    String name = req.getParameter("name"); name = name != null ? name.trim() : "";
+    String plan = req.getParameter("plan"); plan = plan != null ? plan.trim() : "";
+
+    if (name.isEmpty() || plan.isEmpty()) {
+      log.info(String.format("Ignoring branch update with empty field (name '%s', plan '%s')", name, plan));
+      return;
+    }
 
     BranchSettings settings = new ImmutableBranchSettings(name, plan);
 
@@ -111,12 +121,25 @@ public class PullRequestSettingServlet extends HttpServlet {
 
   private void saveGeneralSettings(HttpServletRequest req, Repository repository) {
     Boolean enabled = (req.getParameter("enabled") == null) ? false : true;
-    String url = req.getParameter("url");
-    String user = req.getParameter("user");
-    String password = req.getParameter("password");
-    String plan = req.getParameter("plan");
+    String url = req.getParameter("url"); url = url != null ? url.trim() : "";
+    String user = req.getParameter("user"); user = user != null ? user.trim() : "";
+    String password = req.getParameter("password"); password = password != null ? password.trim() : "";
+    String retestMsg = req.getParameter("retest-msg"); retestMsg = retestMsg != null ? retestMsg.trim() : "";
 
-    PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings(enabled, url, user, password, plan);
+    if (url.isEmpty() || user.isEmpty() || password.isEmpty() || retestMsg.isEmpty()) {
+      log.info(String.format("Ignoring settings update with empty field (url '%s', user '%s', password '%s', retestMsg '%s'", url,
+        user, password.isEmpty() ? "" : "*********", retestMsg));
+      return;
+    }
+
+    try {
+      Pattern.compile(retestMsg);
+    } catch (PatternSyntaxException e) {
+      log.info(String.format("Ignoring settings update with illegal retest message pattern (%s)", retestMsg), e);
+      return;
+    }
+
+    PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings(enabled, url, user, password, retestMsg);
 
     pullRequestTriggerSettingsService.setPullRequestTriggerSettings(repository, settings);
   }

@@ -59,10 +59,10 @@
                                 {param isRequired: true /}
                             {/call}
                             {call aui.form.textField}
-                                {param id: 'plan' /}
-                                {param value: $prTriggerSettings['plan'] /}
-                                {param labelContent: 'Plan' /}
-                                {param descriptionText: 'Bamboo Build Plan (PROJ-PLAN)' /}
+                                {param id: 'retest-msg' /}
+                                {param value: $prTriggerSettings['retestMsg'] /}
+                                {param labelContent: 'Retest Message' /}
+                                {param descriptionText: 'Pull Request Message that will trigger retest (regex allowed)' /}
                                 {param isRequired: true /}
                             {/call}
                             {call aui.form.buttons}

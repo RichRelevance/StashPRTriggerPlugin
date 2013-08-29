@@ -8,23 +8,23 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
   private final @Nonnull String url;
   private final @Nonnull String user;
   private final @Nonnull String password;
-  private final @Nonnull String plan;
+  private final @Nonnull String retestMsg;
 
   public ImmutablePullRequestTriggerSettings() {
     this.enabled = false;
     this.url = "http://localhost/bamboo";
     this.user = "user";
     this.password = "password";
-    this.plan = "plan";
+    this.retestMsg = "(?i)retest this,? please|klaatu barada nikto";
   }
 
   public ImmutablePullRequestTriggerSettings(boolean enabled, @Nonnull String url, @Nonnull String user,
-                                             @Nonnull String password, @Nonnull String plan) {
+                                             @Nonnull String password, @Nonnull String retestMsg) {
     this.enabled = enabled;
     this.url = url;
     this.user = user;
     this.password = password;
-    this.plan = plan;
+    this.retestMsg = retestMsg;
   }
 
   @Override
@@ -48,8 +48,8 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
   }
 
   @Override
-  public String getPlan() {
-    return plan;
+  public String getRetestMsg() {
+    return retestMsg;
   }
 
   @Override
@@ -61,7 +61,7 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
 
     if (enabled != that.enabled) return false;
     if (!password.equals(that.password)) return false;
-    if (!plan.equals(that.plan)) return false;
+    if (!retestMsg.equals(that.retestMsg)) return false;
     if (!url.equals(that.url)) return false;
     if (!user.equals(that.user)) return false;
 
@@ -74,7 +74,7 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
     result = 31 * result + url.hashCode();
     result = 31 * result + user.hashCode();
     result = 31 * result + password.hashCode();
-    result = 31 * result + plan.hashCode();
+    result = 31 * result + retestMsg.hashCode();
     return result;
   }
 
@@ -85,7 +85,7 @@ public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSe
       ", url='" + url + '\'' +
       ", user='" + user + '\'' +
       ", password='" + password + '\'' +
-      ", plan='" + plan + '\'' +
+      ", retestMsg='" + retestMsg + '\'' +
       '}';
   }
 }

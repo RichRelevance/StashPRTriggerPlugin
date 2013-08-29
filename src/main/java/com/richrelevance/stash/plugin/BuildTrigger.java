@@ -14,9 +14,6 @@ import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService;
 
 public class BuildTrigger {
-  // add log4j.logger.attlassian.plugin=DEBUG  to stash-config.properties on Stash home directory to use this logger
-  // private static final Logger log = LoggerFactory.getLogger("atlassian.plugin");
-
   // Needs a log4j.properties
   private static final Logger log = LoggerFactory.getLogger(BuildTrigger.class);
 

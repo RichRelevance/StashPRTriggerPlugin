@@ -10,7 +10,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.richrelevance.stash.plugin.BuildTrigger;
 import com.richrelevance.stash.plugin.settings.BranchSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 
@@ -18,7 +17,7 @@ import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 */
 public class TriggerConnectionBuilder implements URLConnectionBuilder {
   // Needs a log4j.properties
-  private static final Logger log = LoggerFactory.getLogger(BuildTrigger.class);
+  private static final Logger log = LoggerFactory.getLogger(TriggerConnectionBuilder.class);
 
   private final String url;
   private final PullRequestTriggerSettings settings;

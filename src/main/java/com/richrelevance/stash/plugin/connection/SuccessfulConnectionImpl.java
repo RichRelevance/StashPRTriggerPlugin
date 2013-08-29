@@ -8,16 +8,11 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.richrelevance.stash.plugin.BuildTrigger;
-
 /**
  */
 public class SuccessfulConnectionImpl implements SuccessfulConnection {
-  // add log4j.logger.attlassian.plugin=DEBUG  to stash-config.properties on Stash home directory to use this logger
-  // private static final Logger log = LoggerFactory.getLogger("atlassian.plugin");
-
   // Needs a log4j.properties
-  private static final Logger log = LoggerFactory.getLogger(BuildTrigger.class);
+  private static final Logger log = LoggerFactory.getLogger(SuccessfulConnectionImpl.class);
 
   private final URLConnection connection;
 

@@ -29,7 +29,8 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   private static final String KEY_USER = "user";
   private static final String KEY_PASSWORD = "password";
   private static final String KEY_PLAN = "plan";
-  private static final String BRANCH_LIST = "branchList:";
+  private static final String KEY_RETEST_MSG = "retestMsg";
+  private static final String KEY_BRANCH_LIST = "branchList:";
 
   private final PermissionValidationService permissionValidationService;
 
@@ -47,7 +48,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   private final Map<Integer, List<String>> branchListCache = new MapMaker()
     .makeComputingMap(new Function<Integer, List<String>>() {
       public List<String> apply(Integer repoId) {
-        List<String> data = (List<String>) pluginSettings.get(BRANCH_LIST +repoId.toString());
+        List<String> data = (List<String>) pluginSettings.get(KEY_BRANCH_LIST +repoId.toString());
         if (data != null) {
           return data;
         }
@@ -115,7 +116,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     final List<String> branches = branchListCache.get(repository.getId());
     if (!branches.contains(branchName)) {
       branches.add(branchName);
-      pluginSettings.put(BRANCH_LIST + repository.getId().toString(), branches);
+      pluginSettings.put(KEY_BRANCH_LIST + repository.getId().toString(), branches);
       branchListCache.remove(repository.getId().toString());
     }
     final Map<String, String> data;
@@ -136,7 +137,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     final List<String> branches = branchListCache.get(repository.getId());
     if (branches.contains(branchName)) {
       branches.remove(branchName);
-      pluginSettings.remove(BRANCH_LIST + repository.getId().toString());
+      pluginSettings.remove(KEY_BRANCH_LIST + repository.getId().toString());
       branchListCache.remove(repository.getId().toString());
     }
     pluginSettings.remove(branchKey);
@@ -165,7 +166,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     data.put(KEY_URL, settings.getUrl());
     data.put(KEY_USER, settings.getUser());
     data.put(KEY_PASSWORD, settings.getPassword());
-    data.put(KEY_PLAN, settings.getPlan());
+    data.put(KEY_RETEST_MSG, settings.getRetestMsg());
     return data;
   }
 
@@ -175,7 +176,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
       settings.get(KEY_URL),
       settings.get(KEY_USER),
       settings.get(KEY_PASSWORD),
-      settings.get(KEY_PLAN)
+      settings.get(KEY_RETEST_MSG)
     );
   }
 
