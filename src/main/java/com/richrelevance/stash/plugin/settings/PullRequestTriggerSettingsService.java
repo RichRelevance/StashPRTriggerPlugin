@@ -15,4 +15,6 @@ public interface PullRequestTriggerSettingsService {
   void setBranch(Repository repository, String branchName, BranchSettings settings);
 
   void deleteBranch(Repository repository, String branchName);
+
+  BranchSettings getBranchSettingsForBranch(Repository repository, String branchName);
 }

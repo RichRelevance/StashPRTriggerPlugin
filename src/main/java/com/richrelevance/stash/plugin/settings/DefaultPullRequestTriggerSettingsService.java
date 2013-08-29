@@ -115,9 +115,6 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     final List<String> branches = branchListCache.get(repository.getId());
     if (!branches.contains(branchName)) {
       branches.add(branchName);
-      System.err.println(String.format("Updating %s with list %s (added (%s)", BRANCH_LIST + repository.getId().toString(),
-        branches, branchName));
-      log.info(String.format("Updating %s with list %s (added (%s)", BRANCH_LIST + repository.getId().toString(), branches, branchName));
       pluginSettings.put(BRANCH_LIST + repository.getId().toString(), branches);
       branchListCache.remove(repository.getId().toString());
     }
@@ -144,6 +141,18 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     }
     pluginSettings.remove(branchKey);
     branchCache.remove(branchKey);
+  }
+
+  @Override
+  public BranchSettings getBranchSettingsForBranch(Repository repository, String branchName) {
+    permissionValidationService.validateForRepository(repository, Permission.REPO_READ);
+    final List<String> branches = branchListCache.get(repository.getId());
+    for (String branch : branches) {
+      if (branchName.contains(branch)) {
+        return branchCache.get(branchKeyForRepoId(repository, branch));
+      }
+    }
+    return null;
   }
 
   private String branchKeyForRepoId(Repository repository, String branch) {

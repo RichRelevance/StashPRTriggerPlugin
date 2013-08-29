@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.richrelevance.stash.plugin.BuildTrigger;
+import com.richrelevance.stash.plugin.settings.BranchSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 
 /**
@@ -21,12 +22,14 @@ public class TriggerConnectionBuilder implements URLConnectionBuilder {
 
   private final String url;
   private final PullRequestTriggerSettings settings;
+  private final BranchSettings branchSettings;
 
   private HttpURLConnection connection;
 
-  public TriggerConnectionBuilder(String url, PullRequestTriggerSettings settings) {
+  public TriggerConnectionBuilder(String url, PullRequestTriggerSettings settings, BranchSettings branchSettings) {
     this.url = url;
     this.settings = settings;
+    this.branchSettings = branchSettings;
   }
 
   @Override

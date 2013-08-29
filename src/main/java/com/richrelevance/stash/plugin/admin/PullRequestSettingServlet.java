@@ -100,7 +100,6 @@ public class PullRequestSettingServlet extends HttpServlet {
   }
 
   private void saveBranch(HttpServletRequest req, Repository repository) {
-    System.err.println(String.format("Update received with parameters %s", req.getParameterMap()));
     addBranch(req, repository); // adding and saving have the same result
   }
 
