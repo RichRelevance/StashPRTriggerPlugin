@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.richrelevance.stash.plugin</groupId>
     <artifactId>prTrigger</artifactId>
-    <version>2.0-snapshot</version>
+    <version>2.0</version>
 
     <organization>
         <name>Rich Relevance</name>
