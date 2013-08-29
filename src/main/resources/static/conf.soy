@@ -4,6 +4,7 @@
  * @param repository
  * @param prTriggerSettings
  * @param branchSettings
+ * @param messages
  **/
 {template .viewPullRequestTriggerSettings}
 <!DOCTYPE html>
@@ -21,6 +22,32 @@
                 <h2>{stash_i18n('stash.web.pullrequest.trigger.settings.heading', 'PR Trigger')}</h2>
             {/param}
         {/call}
+        {if $messages}
+            {if $messages.successMessage}
+                {call aui.message.success}
+                    {param isCloseable: true /}
+                    {param content: $messages.successMessage /}
+                {/call}
+            {/if}
+            {if $messages.infoMessage}
+                {call aui.message.info}
+                    {param isCloseable: true /}
+                    {param content: $messages.infoMessage /}
+                {/call}
+            {/if}
+            {if $messages.warningMessage}
+                {call aui.message.warning}
+                    {param isCloseable: true /}
+                    {param content: $messages.warningMessage /}
+                {/call}
+            {/if}
+            {if $messages.errorMessage}
+                {call aui.message.error}
+                    {param isCloseable: true /}
+                    {param content: $messages.errorMessage /}
+                {/call}
+            {/if}
+        {/if}
         {call aui.group.group}
             {param content}
                 {call aui.group.item}

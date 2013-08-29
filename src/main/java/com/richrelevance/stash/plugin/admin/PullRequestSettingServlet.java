@@ -56,9 +56,13 @@ public class PullRequestSettingServlet extends HttpServlet {
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    getWithMessages(req, resp, new NoMessages());
+  }
+
+  private void getWithMessages(HttpServletRequest req, HttpServletResponse resp, StatusMessages messages) throws ServletException, IOException {
     Repository repository = getRepository(req);
     if (repository != null) {
-      doView(repository, resp);
+      doView(repository, resp, messages);
     } else {
       resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
@@ -71,55 +75,64 @@ public class PullRequestSettingServlet extends HttpServlet {
       resp.sendError(404);
       return;
     }
-    if (!saveSettings(req, repository)) {
+    final StatusMessages messages = saveSettings(req, repository);
+    if (messages == null) {
       resp.sendError(404);
     }
-    doGet(req, resp);
+    getWithMessages(req, resp, messages);
   }
 
-  private boolean saveSettings(HttpServletRequest req, Repository repository) {
-    String button = req.getParameter("submit-button") != null ? req.getParameter("submit-button") : "";
+  private StatusMessages saveSettings(HttpServletRequest req, Repository repository) {
+    final String button = req.getParameter("submit-button") != null ? req.getParameter("submit-button") : "";
+    final StatusMessages messages;
 
     if (button.equals("Save")) {
-      saveGeneralSettings(req, repository);
+      messages = saveGeneralSettings(req, repository);
     } else if (button.equals("Add")) {
-      addBranch(req, repository);
+      messages = addBranch(req, repository);
     } else if (button.equals("Update")) {
-      saveBranch(req, repository);
+      messages = saveBranch(req, repository);
     } else if (button.equals("Delete")) {
-      deleteBranch(req, repository);
-    } else if (!button.equals("Cancel")) {
-      return false;
+      messages = deleteBranch(req, repository);
+    } else if (button.equals("Cancel")) {
+      messages = new NoMessages();
+    } else {
+      messages = null; // Invalid form leads to 404
     }
 
-    return true;
+    return messages;
   }
 
-  private void addBranch(HttpServletRequest req, Repository repository) {
+  private StatusMessages addBranch(HttpServletRequest req, Repository repository) {
     String name = req.getParameter("name"); name = name != null ? name.trim() : "";
     String plan = req.getParameter("plan"); plan = plan != null ? plan.trim() : "";
 
     if (name.isEmpty() || plan.isEmpty()) {
-      log.info(String.format("Ignoring branch update with empty field (name '%s', plan '%s')", name, plan));
-      return;
+      final String errorMessage = String.format("Empty field not allowed (name '%s', plan '%s')", name, plan);
+      log.info("Ignoring branch update: " + errorMessage);
+      return SingleMessage.error(errorMessage);
     }
 
     BranchSettings settings = new ImmutableBranchSettings(name, plan);
 
     pullRequestTriggerSettingsService.setBranch(repository, name, settings);
+
+    return SingleMessage.success(String.format("Branch %s updated", name));
   }
 
-  private void saveBranch(HttpServletRequest req, Repository repository) {
-    addBranch(req, repository); // adding and saving have the same result
+  private StatusMessages saveBranch(HttpServletRequest req, Repository repository) {
+    return addBranch(req, repository); // adding and saving have the same result
   }
 
-  private void deleteBranch(HttpServletRequest req, Repository repository) {
+  private StatusMessages deleteBranch(HttpServletRequest req, Repository repository) {
     String name = req.getParameter("name");
 
     pullRequestTriggerSettingsService.deleteBranch(repository, name);
+
+    return SingleMessage.success(String.format("Deleted settings for branch %s", name));
   }
 
-  private void saveGeneralSettings(HttpServletRequest req, Repository repository) {
+  private StatusMessages saveGeneralSettings(HttpServletRequest req, Repository repository) {
     Boolean enabled = (req.getParameter("enabled") == null) ? false : true;
     String url = req.getParameter("url"); url = url != null ? url.trim() : "";
     String user = req.getParameter("user"); user = user != null ? user.trim() : "";
@@ -127,21 +140,26 @@ public class PullRequestSettingServlet extends HttpServlet {
     String retestMsg = req.getParameter("retest-msg"); retestMsg = retestMsg != null ? retestMsg.trim() : "";
 
     if (url.isEmpty() || user.isEmpty() || password.isEmpty() || retestMsg.isEmpty()) {
-      log.info(String.format("Ignoring settings update with empty field (url '%s', user '%s', password '%s', retestMsg '%s'", url,
-        user, password.isEmpty() ? "" : "*********", retestMsg));
-      return;
+      final String errorMessage = String.format("Empty field not allowed (url '%s', user '%s', password '%s', " +
+        "retestMsg '%s'", url, user, password.isEmpty() ? "" : "*********", retestMsg);
+      log.info("Ignoring settings update: " + errorMessage);
+      return SingleMessage.error(errorMessage);
     }
 
     try {
       Pattern.compile(retestMsg);
     } catch (PatternSyntaxException e) {
-      log.info(String.format("Ignoring settings update with illegal retest message pattern (%s)", retestMsg), e);
-      return;
+      final String errorMessage = String.format("Illegal retest message pattern '%s' at index %d: %s", retestMsg,
+        e.getIndex(), e.getDescription());
+      log.info("Ignoring settings update: " + errorMessage, e);
+      return SingleMessage.error(errorMessage);
     }
 
     PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings(enabled, url, user, password, retestMsg);
 
     pullRequestTriggerSettingsService.setPullRequestTriggerSettings(repository, settings);
+
+    return SingleMessage.success("Settings updated");
   }
 
   private Repository getRepository(HttpServletRequest req) {
@@ -164,7 +182,7 @@ public class PullRequestSettingServlet extends HttpServlet {
     return !(Strings.isNullOrEmpty(pathInfo) || pathInfo.equals("/"));
   }
 
-  private void doView(Repository repository, HttpServletResponse resp) throws ServletException, IOException {
+  private void doView(Repository repository, HttpServletResponse resp, StatusMessages messages) throws ServletException, IOException {
     permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
     PullRequestTriggerSettings pullRequestTriggerSettings = pullRequestTriggerSettingsService.getPullRequestTriggerSettings(repository);
     ImmutableCollection<BranchSettings> branchSettings = ImmutableList.copyOf(pullRequestTriggerSettingsService.getBranchSettings(repository));
@@ -174,6 +192,7 @@ public class PullRequestSettingServlet extends HttpServlet {
         .put("repository", repository)
         .put("prTriggerSettings", pullRequestTriggerSettings)
         .put("branchSettings", branchSettings)
+        .put("messages", messages)
         .build()
     );
   }
