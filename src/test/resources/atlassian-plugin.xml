@@ -1,0 +1,20 @@
+<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
+  <plugin-info>
+    <description>${project.description}</description>
+    <version>${project.version}</version>
+    <vendor name="${project.organization.name}" url="${project.organization.url}" />
+  </plugin-info>
+
+  <!-- from our base plugin -->
+  <component-import key="pullRequestTriggerSettingsService"
+                    interface="com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService" />
+  <component-import key="trigger"
+                    interface="com.richrelevance.stash.plugin.Trigger" />
+
+  <!-- import from the product container -->
+  <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
+  <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+  <component-import key="soyTemplateRenderer" interface="com.atlassian.soy.renderer.SoyTemplateRenderer"/>
+  <component-import key="repositoryService" interface="com.atlassian.stash.repository.RepositoryService"/>
+  <component-import key="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager"/>
+</atlassian-plugin>

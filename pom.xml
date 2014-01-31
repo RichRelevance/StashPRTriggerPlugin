@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.richrelevance.stash.plugin</groupId>
     <artifactId>prTrigger</artifactId>
-    <version>2.1</version>
+    <version>3.0-SNAPSHOT</version>
 
     <organization>
         <name>Rich Relevance</name>
@@ -19,9 +19,9 @@
     <packaging>atlassian-plugin</packaging>
 
     <properties>
-        <stash.version>2.5.2</stash.version>
-        <stash.data.version>2.5.2</stash.data.version>
-        <amps.version>4.2.3</amps.version>
+        <stash.version>2.10.1</stash.version>
+        <stash.data.version>2.10.1</stash.data.version>
+        <amps.version>4.2.12</amps.version>
         <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -96,6 +96,13 @@
             <version>4.10</version>
             <scope>test</scope>
         </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <version>1.9.5</version>
+        <scope>test</scope>
+      </dependency>
+
 
         <!-- WIRED TEST RUNNER DEPENDENCIES -->
         <dependency>

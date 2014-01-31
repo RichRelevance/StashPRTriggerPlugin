@@ -42,7 +42,7 @@ public class BuildTrigger {
     }
   }
 
-  void invoke() {
+  public void invoke() {
     if (!settings.isEnabled() || branchSettings == null)
       return;
 
