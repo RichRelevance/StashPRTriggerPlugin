@@ -41,8 +41,12 @@ public class TriggerTest {
   private static final String password = "fake password";
   private static final String url = "fakeUrl";
   private static final String retestMsg = "Retest Message";
+  private static final String retestRegex = "(?i)retest this,? please|klaatu barada nikto";
   private static final PullRequestTriggerSettings settingsEnabled = new ImmutablePullRequestTriggerSettings(true, url,
     user, password, retestMsg);
+
+  private static final PullRequestTriggerSettings settingsRegexEnabled = new ImmutablePullRequestTriggerSettings(true, url,
+    user, password, retestRegex);
 
   private static final PullRequestTriggerSettings settingsDisabled = new ImmutablePullRequestTriggerSettings(false, url,
     user, password, retestMsg);
@@ -53,6 +57,9 @@ public class TriggerTest {
     planName);
 
   private static final PullRequestTriggerSettingsService settingsServiceEnabled = new SettingsService(settingsEnabled,
+    immutableBranchSettings);
+
+  private static final PullRequestTriggerSettingsService settingsServiceRegexEnabled = new SettingsService(settingsRegexEnabled,
     immutableBranchSettings);
 
   private static final PullRequestTriggerSettingsService settingsServiceDisabled = new SettingsService(settingsDisabled,
@@ -76,6 +83,26 @@ public class TriggerTest {
     Trigger trigger = new TriggerImpl(settingsServiceEnabled, buildTriggerer);
 
     assertTrue("Trigger returned false on a comment that asked for retest", trigger.askedForRetest(event));
+  }
+
+  @Test
+  public void askedForRetestReturnsTrueIfMessageMatchesRegexTest() {
+    PullRequestCommentAddedEvent event = mock(PullRequestCommentAddedEvent.class);
+    Comment comment = mock(Comment.class);
+    PullRequest pullRequest = mock(PullRequest.class);
+    PullRequestRef ref = mock(PullRequestRef.class);
+    Repository repository = mock(Repository.class);
+    BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
+
+    when(event.getComment()).thenReturn(comment);
+    when(comment.getText()).thenReturn("KLAATU BARADA NIKTO");
+    when(event.getPullRequest()).thenReturn(pullRequest);
+    when(pullRequest.getToRef()).thenReturn(ref);
+    when(ref.getRepository()).thenReturn(repository);
+
+    Trigger trigger = new TriggerImpl(settingsServiceRegexEnabled, buildTriggerer);
+
+    assertTrue("Trigger returned false on a comment that asked for retest, matching regex", trigger.askedForRetest(event));
   }
 
   @Test
