@@ -47,6 +47,12 @@
   <component key="trigger" class="com.richrelevance.stash.plugin.TriggerImpl">
     <interface>com.richrelevance.stash.plugin.Trigger</interface>
   </component>
+  <component key="bambooConnector" class="com.richrelevance.stash.plugin.connection.BambooConnectorImpl">
+    <interface>com.richrelevance.stash.plugin.connection.BambooConnector</interface>
+  </component>
+  <component key="buildTriggerer" class="com.richrelevance.stash.plugin.BuildTriggererImpl">
+    <interface>com.richrelevance.stash.plugin.BuildTriggerer</interface>
+  </component>
 
     <!-- import from the product container -->
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />

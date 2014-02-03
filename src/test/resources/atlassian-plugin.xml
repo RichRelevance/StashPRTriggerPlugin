@@ -10,6 +10,10 @@
                     interface="com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService" />
   <component-import key="trigger"
                     interface="com.richrelevance.stash.plugin.Trigger" />
+  <component-import key="bambooConnector"
+                    interface="com.richrelevance.stash.plugin.connection.BambooConnector"/>
+  <component-import key="buildTriggerer"
+                    interface="com.richrelevance.stash.plugin.BuildTriggerer"/>
 
   <!-- import from the product container -->
   <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />

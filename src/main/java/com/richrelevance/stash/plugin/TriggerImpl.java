@@ -8,17 +8,21 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.stash.event.pull.PullRequestCommentAddedEvent;
 import com.atlassian.stash.event.pull.PullRequestEvent;
+import com.atlassian.stash.pull.PullRequest;
 import com.atlassian.stash.repository.Repository;
+import com.richrelevance.stash.plugin.connection.BambooConnector;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService;
 
 public class TriggerImpl implements Trigger {
   private static final Logger log = LoggerFactory.getLogger(TriggerImpl.class);
 
-  public final PullRequestTriggerSettingsService service;
+  private final PullRequestTriggerSettingsService service;
+  private BuildTriggerer buildTriggerer;
 
-  public TriggerImpl(PullRequestTriggerSettingsService service) {
+  public TriggerImpl(PullRequestTriggerSettingsService service, BuildTriggerer buildTriggerer) {
     this.service = service;
+    this.buildTriggerer = buildTriggerer;
   }
 
   @Override
@@ -46,6 +50,7 @@ public class TriggerImpl implements Trigger {
 
   @Override
   public void triggerPullRequest(PullRequestEvent pullRequestEvent) {
-    new BuildTrigger(pullRequestEvent.getPullRequest(), service).invoke();
+    PullRequest pullRequest = pullRequestEvent.getPullRequest();
+    buildTriggerer.invoke(pullRequest);
   }
 }
