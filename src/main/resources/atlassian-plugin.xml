@@ -1,49 +1,54 @@
 <atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}" plugins-version="2">
-    <plugin-info>
-        <description>${project.description}</description>
-        <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
-        <param name="plugin-icon">images/pluginIcon.png</param>
-        <param name="plugin-logo">images/pluginLogo.png</param>
-        <param name="configure.url">/stash/plugin/config/pullrequest/conf</param>
-    </plugin-info>
+  <plugin-info>
+    <description>${project.description}</description>
+    <version>${project.version}</version>
+    <vendor name="${project.organization.name}" url="${project.organization.url}"/>
+    <param name="plugin-icon">images/pluginIcon.png</param>
+    <param name="plugin-logo">images/pluginLogo.png</param>
+    <param name="configure.url">/stash/plugin/config/pullrequest/conf</param>
+  </plugin-info>
 
-    <!-- add our i18n resource -->
-    <resource type="i18n" name="i18n" location="prTrigger"/>
+  <!-- add our i18n resource -->
+  <resource type="i18n" name="i18n" location="prTrigger"/>
 
-    <!-- add our web resources -->
-    <web-resource key="prTrigger-resources" name="prTrigger Web Resources">
-        <dependency>com.atlassian.auiplugin:ajs</dependency>
+  <!-- add our web resources -->
+  <web-resource key="prTrigger-resources" name="prTrigger Web Resources">
+    <dependency>com.atlassian.auiplugin:ajs</dependency>
 
-        <resource type="download" name="images/" location="/images"/>
+    <resource type="download" name="images/" location="/images"/>
 
-        <context>prTrigger</context>
-    </web-resource>
+    <context>prTrigger</context>
+  </web-resource>
 
-    <!-- add our stash-specific resources -->
-    <stash-resource key="soy-templates">
-        <directory location="/static/">
-            <include>/**/*.soy</include>
-        </directory>
-        <dependency>com.atlassian.stash.stash-web-plugin:server-soy-templates</dependency>
-    </stash-resource>
+  <!-- add our stash-specific resources -->
+  <stash-resource key="soy-templates">
+    <directory location="/static/">
+      <include>/**/*.soy</include>
+    </directory>
+    <dependency>com.atlassian.stash.stash-web-plugin:server-soy-templates</dependency>
+  </stash-resource>
 
-    <!-- add our web component (settings) -->
-    <web-item key="repository-settings-pullrequest-trigger-settings" weight="30" section="stash.repository.settings.panel/repository-settings-addons-section">
-        <label key="stash.web.repository.settings.tab.deletion.settings">PR Trigger</label>
-        <tooltip key="stash.web.repository.settings.tab.deletion.settings.tooltip">Configure Pull Request Trigger of Bamboo Builds</tooltip>
-        <link>${navBuilder.pluginServlets().path('pullrequest-trigger-settings', $project.key, $repository.slug).buildRelNoContext()}</link>
-    </web-item>
+  <!-- add our web component (settings) -->
+  <web-item key="repository-settings-pullrequest-trigger-settings" weight="30"
+            section="stash.repository.settings.panel/repository-settings-addons-section">
+    <label key="stash.web.repository.settings.tab.deletion.settings">PR Trigger</label>
+    <tooltip key="stash.web.repository.settings.tab.deletion.settings.tooltip">Configure Pull Request Trigger of Bamboo Builds
+    </tooltip>
+    <link>
+      ${navBuilder.pluginServlets().path('pullrequest-trigger-settings', $project.key, $repository.slug).buildRelNoContext()}
+    </link>
+  </web-item>
 
-    <servlet key="pullrequest-trigger-settings-servlet" class="com.richrelevance.stash.plugin.admin.PullRequestSettingServlet">
-        <url-pattern>/pullrequest-trigger-settings/*</url-pattern>
-    </servlet>
+  <servlet key="pullrequest-trigger-settings-servlet" class="com.richrelevance.stash.plugin.admin.PullRequestSettingServlet">
+    <url-pattern>/pullrequest-trigger-settings/*</url-pattern>
+  </servlet>
 
-    <!-- publish our component -->
-    <component key="pullRequestTriggerService" class="com.richrelevance.stash.plugin.PullRequestHook" />
-    <component key="pullRequestTriggerSettingsService" class="com.richrelevance.stash.plugin.settings.DefaultPullRequestTriggerSettingsService">
-      <interface>com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService</interface>
-    </component>
+  <!-- publish our component -->
+  <component key="pullRequestTriggerService" class="com.richrelevance.stash.plugin.PullRequestHook"/>
+  <component key="pullRequestTriggerSettingsService"
+             class="com.richrelevance.stash.plugin.settings.DefaultPullRequestTriggerSettingsService">
+    <interface>com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService</interface>
+  </component>
   <component key="trigger" class="com.richrelevance.stash.plugin.TriggerImpl">
     <interface>com.richrelevance.stash.plugin.Trigger</interface>
   </component>
@@ -54,11 +59,11 @@
     <interface>com.richrelevance.stash.plugin.BuildTriggerer</interface>
   </component>
 
-    <!-- import from the product container -->
-    <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
-    <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
-    <component-import key="soyTemplateRenderer" interface="com.atlassian.soy.renderer.SoyTemplateRenderer"/>
-    <component-import key="repositoryService" interface="com.atlassian.stash.repository.RepositoryService"/>
-    <component-import key="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager"/>
+  <!-- import from the product container -->
+  <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties"/>
+  <component-import key="pluginSettingsFactory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory"/>
+  <component-import key="soyTemplateRenderer" interface="com.atlassian.soy.renderer.SoyTemplateRenderer"/>
+  <component-import key="repositoryService" interface="com.atlassian.stash.repository.RepositoryService"/>
+  <component-import key="webResourceManager" interface="com.atlassian.plugin.webresource.WebResourceManager"/>
 
 </atlassian-plugin>
