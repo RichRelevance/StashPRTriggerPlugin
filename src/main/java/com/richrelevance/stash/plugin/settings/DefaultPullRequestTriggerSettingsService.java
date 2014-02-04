@@ -69,7 +69,8 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
 
   private final PluginSettings pluginSettings;
 
-  public DefaultPullRequestTriggerSettingsService(PermissionValidationService permissionValidationService, PluginSettingsFactory pluginSettingsFactory) {
+  public DefaultPullRequestTriggerSettingsService(PermissionValidationService permissionValidationService,
+                                                  PluginSettingsFactory pluginSettingsFactory) {
     this.permissionValidationService = permissionValidationService;
     pluginSettings = pluginSettingsFactory.createSettingsForKey(PluginMetadata.getPluginKey());
   }
@@ -128,6 +129,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     }
     pluginSettings.put(branchKey, data);
     branchCache.remove(branchKey);
+    branchListCache.remove(repository.getId());
   }
 
   @Override
@@ -138,6 +140,8 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     if (branches.contains(branchName)) {
       branches.remove(branchName);
       pluginSettings.remove(KEY_BRANCH_LIST + repository.getId().toString());
+      if (!branches.isEmpty())
+        pluginSettings.put(KEY_BRANCH_LIST + repository.getId().toString(), branches);
       branchListCache.remove(repository.getId().toString());
     }
     pluginSettings.remove(branchKey);
@@ -160,7 +164,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     return branch + ":" + repository.getId().toString();
   }
 
-  private Map<String, String> serialize(PullRequestTriggerSettings settings) {
+  static public Map<String, String> serialize(PullRequestTriggerSettings settings) {
     Map<String, String> data = new HashMap<String, String>();
     data.put(KEY_ENABLED, Boolean.toString(settings.isEnabled()));
     data.put(KEY_URL, settings.getUrl());
@@ -170,7 +174,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     return data;
   }
 
-  private PullRequestTriggerSettings deserialize(Map<String, String> settings) {
+  static public PullRequestTriggerSettings deserialize(Map<String, String> settings) {
     return new ImmutablePullRequestTriggerSettings(
       Boolean.parseBoolean(settings.get(KEY_ENABLED)),
       settings.get(KEY_URL),
@@ -180,14 +184,14 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     );
   }
 
-  private Map<String, String> serializeBranch(BranchSettings settings) {
+  static public Map<String, String> serializeBranch(BranchSettings settings) {
     Map<String, String> data = new HashMap<String, String>();
     data.put(KEY_BRANCH_NAME, settings.getName());
     data.put(KEY_PLAN, settings.getPlan());
     return data;
   }
 
-  private BranchSettings deserializeBranch(Map<String, String> settings) {
+  static public BranchSettings deserializeBranch(Map<String, String> settings) {
     return new ImmutableBranchSettings(
       settings.get(KEY_BRANCH_NAME),
       settings.get(KEY_PLAN)

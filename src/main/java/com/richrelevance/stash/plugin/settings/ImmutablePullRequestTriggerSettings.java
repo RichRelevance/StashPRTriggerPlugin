@@ -2,7 +2,7 @@ package com.richrelevance.stash.plugin.settings;
 
 import javax.annotation.Nonnull;
 
-public class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSettings{
+public final class ImmutablePullRequestTriggerSettings implements PullRequestTriggerSettings{
 
   private final boolean enabled;
   private final @Nonnull String url;
