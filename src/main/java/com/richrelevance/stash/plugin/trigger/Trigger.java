@@ -11,8 +11,6 @@ import com.atlassian.stash.event.pull.PullRequestOpenedEvent;
  * should trigger a build or not, and calling the build triggerer if so.
  */
 public interface Trigger {
-  boolean askedForRetest(PullRequestCommentAddedEvent event);
-
   /**
    * Treats a pull request event that leads to an automatic trigger.
    *

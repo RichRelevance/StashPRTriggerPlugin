@@ -26,27 +26,6 @@ public class TriggerImpl implements Trigger {
   }
 
   @Override
-  public boolean askedForRetest(PullRequestCommentAddedEvent event) {
-    final String comment = event.getComment().getText();
-    final PullRequest pullRequest = event.getPullRequest();
-    final PullRequestTriggerSettings settings = getSettings(pullRequest);
-
-    final String retestMsg = settings.getRetestMsg();
-
-    final Pattern pattern;
-    try {
-      pattern = Pattern.compile(retestMsg);
-    } catch (PatternSyntaxException e) {
-      final String branchName = pullRequest.getToRef().getId();
-      log.error(String.format("Invalid retest regex for repository %s, branch %s: %s", getRepository(pullRequest), branchName,
-        retestMsg), e);
-      return false;
-    }
-
-    return pattern.matcher(comment).find();
-  }
-
-  @Override
   public void automaticTrigger(PullRequestEvent pullRequestEvent) {
     triggerBuild(pullRequestEvent);
   }
@@ -72,6 +51,26 @@ public class TriggerImpl implements Trigger {
     } else {
       log.error("id of pull request is null: " + pullRequest);
     }
+  }
+
+  private boolean askedForRetest(PullRequestCommentAddedEvent event) {
+    final String comment = event.getComment().getText();
+    final PullRequest pullRequest = event.getPullRequest();
+    final PullRequestTriggerSettings settings = getSettings(pullRequest);
+
+    final String retestMsg = settings.getRetestMsg();
+
+    final Pattern pattern;
+    try {
+      pattern = Pattern.compile(retestMsg);
+    } catch (PatternSyntaxException e) {
+      final String branchName = pullRequest.getToRef().getId();
+      log.error(String.format("Invalid retest regex for repository %s, branch %s: %s", getRepository(pullRequest), branchName,
+        retestMsg), e);
+      return false;
+    }
+
+    return pattern.matcher(comment).find();
   }
 
   private PullRequestTriggerSettings getSettings(PullRequest pullRequest) {
