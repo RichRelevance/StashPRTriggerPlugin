@@ -21,6 +21,7 @@ import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 import com.atlassian.stash.repository.Repository;
 import com.atlassian.stash.user.PermissionValidationService;
+import com.google.common.collect.Lists;
 import com.richrelevance.stash.plugin.settings.BranchSettings;
 import com.richrelevance.stash.plugin.settings.DefaultPullRequestTriggerSettingsService;
 import com.richrelevance.stash.plugin.settings.ImmutableBranchSettings;
@@ -42,9 +43,9 @@ public class SettingsTest {
   private static final String branchName = "default branch";
   private static final String anotherBranchName = "another branch";
   private static final String planName = "StandardPlan";
-  private static final ImmutableBranchSettings immutableBranchSettings = new ImmutableBranchSettings(branchName,
+  private static final BranchSettings immutableBranchSettings = new ImmutableBranchSettings(branchName,
     planName);
-  private static final ImmutableBranchSettings anotherBranchSettings = new ImmutableBranchSettings(anotherBranchName,
+  private static final BranchSettings anotherBranchSettings = new ImmutableBranchSettings(anotherBranchName,
     "somethingElse");
 
   private static final Map<String, String> settingsMapEnabled = DefaultPullRequestTriggerSettingsService.serialize(settingsEnabled);
@@ -125,7 +126,7 @@ public class SettingsTest {
   }
 
   @Test
-  public void gettingBranchSettingsForNewRepoAndBranchReturnsNullTest() {
+  public void gettingBranchSettingsForNewRepoAndBranchReturnsEmptyListTest() {
     final PermissionValidationService permService = mock(PermissionValidationService.class);
     final PluginSettingsFactory factory = mock(PluginSettingsFactory.class);
     final PluginSettings pluginSettings = mock(PluginSettings.class);
@@ -136,7 +137,7 @@ public class SettingsTest {
 
     final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
 
-    assertNull("Branch settings retrievable in a new repo", service.getBranchSettingsForBranch(repository, branchName));
+    assertTrue("Branch settings retrievable in a new repo", service.getBranchSettingsForBranch(repository, branchName).isEmpty());
   }
 
   @Test
@@ -157,7 +158,6 @@ public class SettingsTest {
 
     service.setBranch(repository, branchName, immutableBranchSettings);
     final List<BranchSettings> branchSettingsList = service.getBranchSettings(repository);
-    final BranchSettings settings = service.getBranchSettingsForBranch(repository, branchName);
 
     InOrder inOrder = inOrder(pluginSettings);
     inOrder.verify(pluginSettings).get("branchList:1");
@@ -169,8 +169,86 @@ public class SettingsTest {
 
     assertEquals("Branch settings list does not have expected size", 1, branchSettingsList.size());
     assertTrue("Branch settings list does not contain saved setting", branchSettingsList.contains(immutableBranchSettings));
-    assertEquals(immutableBranchSettings, settings);
-    assertNotSame(anotherBranchSettings, settings);
+  }
+
+  @Test
+  public void gettingSettingsForBranchReturnsBranchesMatchingNameTest() {
+    final PermissionValidationService permService = mock(PermissionValidationService.class);
+    final PluginSettingsFactory factory = mock(PluginSettingsFactory.class);
+    final PluginSettings pluginSettings = mock(PluginSettings.class);
+    final Repository repository = mock(Repository.class);
+
+    when(repository.getId()).thenReturn(1);
+    when(factory.createSettingsForKey(PluginMetadata.getPluginKey())).thenReturn(pluginSettings);
+    when(pluginSettings.get("branchList:1")).thenReturn(expandedBranchList());
+    when(pluginSettings.get(branchName + ":1")).thenReturn(branchSettingsMap);
+    when(pluginSettings.get(anotherBranchName + ":1")).thenReturn(anotherBranchMap);
+
+    final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
+
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, branchName);
+
+    assertEquals(Lists.newArrayList(immutableBranchSettings), settingsList);
+  }
+
+  @Test
+  public void gettingSettingsForBranchReturnsBranchesMatchingRegexTest() {
+    final PermissionValidationService permService = mock(PermissionValidationService.class);
+    final PluginSettingsFactory factory = mock(PluginSettingsFactory.class);
+    final PluginSettings pluginSettings = mock(PluginSettings.class);
+    final Repository repository = mock(Repository.class);
+
+    when(repository.getId()).thenReturn(1);
+    when(factory.createSettingsForKey(PluginMetadata.getPluginKey())).thenReturn(pluginSettings);
+    when(pluginSettings.get("branchList:1")).thenReturn(expandedBranchList());
+    when(pluginSettings.get(branchName + ":1")).thenReturn(branchSettingsMap);
+    when(pluginSettings.get(anotherBranchName + ":1")).thenReturn(anotherBranchMap);
+
+    final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
+
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, "(default|another) branch");
+
+    assertEquals(Lists.newArrayList(immutableBranchSettings, anotherBranchSettings), settingsList);
+  }
+
+  @Test
+  public void gettingSettingsForBranchReturnsBranchesWithPartialNameMatchesTest() {
+    final PermissionValidationService permService = mock(PermissionValidationService.class);
+    final PluginSettingsFactory factory = mock(PluginSettingsFactory.class);
+    final PluginSettings pluginSettings = mock(PluginSettings.class);
+    final Repository repository = mock(Repository.class);
+
+    when(repository.getId()).thenReturn(1);
+    when(factory.createSettingsForKey(PluginMetadata.getPluginKey())).thenReturn(pluginSettings);
+    when(pluginSettings.get("branchList:1")).thenReturn(expandedBranchList());
+    when(pluginSettings.get(branchName + ":1")).thenReturn(branchSettingsMap);
+    when(pluginSettings.get(anotherBranchName + ":1")).thenReturn(anotherBranchMap);
+
+    final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
+
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, "another");
+
+    assertEquals(Lists.newArrayList(anotherBranchSettings), settingsList);
+  }
+
+  @Test
+  public void gettingSettingsForBranchReturnsAllBranchesMatchingNameTest() {
+    final PermissionValidationService permService = mock(PermissionValidationService.class);
+    final PluginSettingsFactory factory = mock(PluginSettingsFactory.class);
+    final PluginSettings pluginSettings = mock(PluginSettings.class);
+    final Repository repository = mock(Repository.class);
+
+    when(repository.getId()).thenReturn(1);
+    when(factory.createSettingsForKey(PluginMetadata.getPluginKey())).thenReturn(pluginSettings);
+    when(pluginSettings.get("branchList:1")).thenReturn(expandedBranchList());
+    when(pluginSettings.get(branchName + ":1")).thenReturn(branchSettingsMap);
+    when(pluginSettings.get(anotherBranchName + ":1")).thenReturn(anotherBranchMap);
+
+    final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
+
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, "branch");
+
+    assertEquals(Lists.newArrayList(immutableBranchSettings, anotherBranchSettings), settingsList);
   }
 
   @Test
@@ -203,7 +281,7 @@ public class SettingsTest {
     inOrder.verifyNoMoreInteractions();
 
     assertEquals("Branch settings list after deletion is not empty", 0, service.getBranchSettings(repository).size());
-    assertNull("Branch settings retrievable after deletion", service.getBranchSettingsForBranch(repository, branchName));
+    assertTrue("Branch settings retrievable after deletion", service.getBranchSettingsForBranch(repository, branchName).isEmpty());
   }
 
   @Test
@@ -246,16 +324,16 @@ public class SettingsTest {
     inOrder.verifyNoMoreInteractions();
 
     assertEquals("Expected 1 branch left after deleting 1 of 2 existing", 1, service.getBranchSettings(repository).size());
-    assertNull("Branch settings retrievable after deletion", service.getBranchSettingsForBranch(repository, branchName));
-    assertEquals("Expected settings for non-deleted branch", anotherBranchSettings,
+    assertTrue("Branch settings retrievable after deletion", service.getBranchSettingsForBranch(repository, branchName).isEmpty());
+    assertEquals("Expected settings for non-deleted branch", Lists.newArrayList(anotherBranchSettings),
       service.getBranchSettingsForBranch(repository, anotherBranchName));
   }
 
-  private static List<String> reducedBranchList() {
-    final List<String> reducedBranchList = new ArrayList<String>();
+  private static List<String> expectedBranchList() {
+    final List<String> expectedBranchList = new ArrayList<String>(1);
 
-    reducedBranchList.add(anotherBranchName);
-    return reducedBranchList;
+    expectedBranchList.add(branchName);
+    return expectedBranchList;
   }
 
   private static List<String> expandedBranchList() {
@@ -264,10 +342,10 @@ public class SettingsTest {
     return expandedBranchList;
   }
 
-  private static List<String> expectedBranchList() {
-    final List<String> expectedBranchList = new ArrayList<String>(1);
+  private static List<String> reducedBranchList() {
+    final List<String> reducedBranchList = new ArrayList<String>();
 
-    expectedBranchList.add(branchName);
-    return expectedBranchList;
+    reducedBranchList.add(anotherBranchName);
+    return reducedBranchList;
   }
 }

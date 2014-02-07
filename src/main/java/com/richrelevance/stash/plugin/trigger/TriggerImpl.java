@@ -1,5 +1,6 @@
 package com.richrelevance.stash.plugin.trigger;
 
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -42,12 +43,15 @@ public class TriggerImpl implements Trigger {
     final PullRequestTriggerSettings settings = getSettings(pullRequest);
     final Repository repository = getRepository(pullRequest);
     final String branchName = pullRequest.getToRef().getId();
-    final BranchSettings branchSettings = service.getBranchSettingsForBranch(repository, branchName);
+    final List<BranchSettings> branchSettingsList = service.getBranchSettingsForBranch(repository, branchName);
     final Long prNumber = pullRequest.getId();
 
     if (prNumber != null) {
-      if (settings.isEnabled() && branchSettings != null)
-        buildTriggerer.invoke(prNumber, settings, branchSettings);
+      if (settings.isEnabled()) {
+        for (BranchSettings branchSettings : branchSettingsList) {
+          buildTriggerer.invoke(prNumber, settings, branchSettings);
+        }
+      }
     } else {
       log.error("id of pull request is null: " + pullRequest);
     }

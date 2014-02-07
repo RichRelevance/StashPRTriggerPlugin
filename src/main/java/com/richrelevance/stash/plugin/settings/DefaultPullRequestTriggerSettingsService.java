@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,15 +151,25 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   }
 
   @Override
-  public BranchSettings getBranchSettingsForBranch(Repository repository, String branchName) {
+  public List<BranchSettings> getBranchSettingsForBranch(Repository repository, String branchPattern) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_READ);
     final List<String> branches = branchListCache.get(repository.getId());
+    final List<BranchSettings> result = new ArrayList<BranchSettings>();
+    final Pattern regexPattern;
+
+    try {
+      regexPattern = Pattern.compile(branchPattern);
+    } catch (PatternSyntaxException e) {
+      log.error(String.format("Invalid regex for branch configuration: %s", branchPattern), e);
+      return new ArrayList<BranchSettings>();
+    }
+
     for (String branch : branches) {
-      if (branchName.contains(branch)) {
-        return branchCache.get(branchKeyForRepoId(repository, branch));
+      if (regexPattern.matcher(branch).find()) {
+        result.add(branchCache.get(branchKeyForRepoId(repository, branch)));
       }
     }
-    return null;
+    return result;
   }
 
   private String branchKeyForRepoId(Repository repository, String branch) {
