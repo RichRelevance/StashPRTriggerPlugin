@@ -10,36 +10,36 @@ import com.atlassian.stash.event.pull.PullRequestRescopedEvent;
 import com.atlassian.stash.pull.PullRequest;
 import com.atlassian.stash.pull.PullRequestRef;
 import com.richrelevance.stash.plugin.PullRequestHook;
-import com.richrelevance.stash.plugin.Trigger;
+import com.richrelevance.stash.plugin.trigger.Trigger;
 
 /**
  * Created by dsobral on 1/30/14.
  */
-public class PRHookUnitTest {
+public class PullRequestHookTest {
   @Test
-  public void triggerIsCalledOnPullRequestOpenTest() {
+  public void automaticTriggerIsCalledOnPullRequestOpenTest() {
     Trigger trigger = mock(Trigger.class);
     PullRequestOpenedEvent event = mock(PullRequestOpenedEvent.class);
     PullRequestHook pullRequestHook = new PullRequestHook(trigger);
 
     pullRequestHook.onPullRequestOpen(event);
 
-    verify(trigger).triggerPullRequest(event);
+    verify(trigger).automaticTrigger(event);
   }
 
   @Test
-  public void triggerIsCalledOnPullRequestReOpenTest() {
+  public void automaticTriggerIsCalledOnPullRequestReOpenTest() {
     Trigger trigger = mock(Trigger.class);
     PullRequestReopenedEvent event = mock(PullRequestReopenedEvent.class);
     PullRequestHook pullRequestHook = new PullRequestHook(trigger);
 
     pullRequestHook.onPullRequestReopen(event);
 
-    verify(trigger).triggerPullRequest(event);
+    verify(trigger).automaticTrigger(event);
   }
 
   @Test
-  public void triggerIsCalledOnRescopesChangingHashTest() {
+  public void automaticTriggerIsCalledOnRescopeChangingHashTest() {
     Trigger trigger = mock(Trigger.class);
     PullRequestRescopedEvent event = mock(PullRequestRescopedEvent.class);
     PullRequest pullRequest = mock(PullRequest.class);
@@ -54,7 +54,7 @@ public class PRHookUnitTest {
 
     pullRequestHook.onPullRequestRescope(event);
 
-    verify(trigger).triggerPullRequest(event);
+    verify(trigger).automaticTrigger(event);
   }
 
   @Test
@@ -73,34 +73,18 @@ public class PRHookUnitTest {
 
     pullRequestHook.onPullRequestRescope(event);
 
-    verify(trigger, never()).triggerPullRequest(event);
+    verify(trigger, never()).automaticTrigger(event);
   }
 
   @Test
-  public void triggerIsCalledWhenCommentAsksForRetestTest() {
+  public void onDemandTriggerIsCalledWhenCommentsAreAddedTest() {
     Trigger trigger = mock(Trigger.class);
     PullRequestCommentAddedEvent event = mock(PullRequestCommentAddedEvent.class);
-
-    when(trigger.askedForRetest(event)).thenReturn(true);
 
     PullRequestHook pullRequestHook = new PullRequestHook(trigger);
 
     pullRequestHook.onPullRequestComment(event);
 
-    verify(trigger).triggerPullRequest(event);
-  }
-
-  @Test
-  public void triggerIsNotCalledWhenCommentDoesNotAskForRetestTest() {
-    Trigger trigger = mock(Trigger.class);
-    PullRequestCommentAddedEvent event = mock(PullRequestCommentAddedEvent.class);
-
-    when(trigger.askedForRetest(event)).thenReturn(false);
-
-    PullRequestHook pullRequestHook = new PullRequestHook(trigger);
-
-    pullRequestHook.onPullRequestComment(event);
-
-    verify(trigger, never()).triggerPullRequest(event);
+    verify(trigger).onDemandTrigger(event);
   }
 }
