@@ -120,20 +120,22 @@ public class BambooConnectorImpl implements BambooConnector {
   }
 
   private String getResponse() throws URLConnectionBuildError {
-    String response = null;
+    String response;
+
     try {
-      String encoding = connection.getContentEncoding();
-      encoding = encoding == null ? "UTF-8" : encoding;
-
+      final String connectionEncoding = connection.getContentEncoding();
+      final String encoding = connectionEncoding != null ? connectionEncoding : "UTF-8";
       final InputStream buildRequisitionResponse = connection.getInputStream();
-      final String response1 = IOUtils.toString(buildRequisitionResponse, encoding);
-      log.info("response from " + connection.getURL() + ": " + response);
-      buildRequisitionResponse.close();
 
-      response = response1;
+      response = IOUtils.toString(buildRequisitionResponse, encoding);
+
+      log.info("response from " + connection.getURL() + ": " + response);
+
+      buildRequisitionResponse.close();
     } catch (IOException e) {
       throw new URLConnectionBuildError("unable to get POST response", e);
     }
+
     return response;
   }
 }

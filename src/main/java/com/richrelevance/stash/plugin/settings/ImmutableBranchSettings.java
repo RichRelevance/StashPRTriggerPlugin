@@ -15,16 +15,19 @@ public final class ImmutableBranchSettings implements BranchSettings {
     this.retestMsg = retestMsg;
   }
 
+  @Nonnull
   @Override
   public String getName() {
     return name;
   }
 
+  @Nonnull
   @Override
   public String getPlan() {
     return plan;
   }
 
+  @Nonnull
   @Override
   public String getRetestMsg() {
     return retestMsg;
@@ -48,9 +51,8 @@ public final class ImmutableBranchSettings implements BranchSettings {
 
     if (!name.equals(that.name)) return false;
     if (!plan.equals(that.plan)) return false;
-    if (!retestMsg.equals(that.retestMsg)) return false;
+    return retestMsg.equals(that.retestMsg);
 
-    return true;
   }
 
   @Override

@@ -115,6 +115,7 @@ public class PullRequestSettingServlet extends HttpServlet {
     }
 
     try {
+      //noinspection ResultOfMethodCallIgnored
       Pattern.compile(retestMsg);
     } catch (PatternSyntaxException e) {
       final String errorMessage = String.format("Illegal retest message pattern '%s' at index %d: %s", retestMsg,
@@ -143,7 +144,7 @@ public class PullRequestSettingServlet extends HttpServlet {
   }
 
   private StatusMessages saveGeneralSettings(HttpServletRequest req, Repository repository) {
-    Boolean enabled = (req.getParameter("enabled") == null) ? false : true;
+    Boolean enabled = (req.getParameter("enabled") != null);
     String url = req.getParameter("url"); url = url != null ? url.trim() : "";
     String user = req.getParameter("user"); user = user != null ? user.trim() : "";
     String password = req.getParameter("password"); password = password != null ? password.trim() : "";

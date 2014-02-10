@@ -19,7 +19,7 @@ public class TriggerImpl implements Trigger {
   private static final Logger log = LoggerFactory.getLogger(TriggerImpl.class);
 
   private final PullRequestTriggerSettingsService service;
-  private BuildTriggerer buildTriggerer;
+  private final BuildTriggerer buildTriggerer;
 
   public TriggerImpl(PullRequestTriggerSettingsService service, BuildTriggerer buildTriggerer) {
     this.service = service;
@@ -96,7 +96,7 @@ public class TriggerImpl implements Trigger {
       try {
         pattern = Pattern.compile(retestMsg);
       } catch (PatternSyntaxException e) {
-        log.error(String.format("Invalid retest message regex for branch $s: %s", branchSettings.getName(), retestMsg), e);
+        log.error(String.format("Invalid retest message regex for branch %s: %s", branchSettings.getName(), retestMsg), e);
         return false;
       }
 

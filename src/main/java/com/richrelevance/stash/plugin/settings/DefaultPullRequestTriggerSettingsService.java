@@ -36,9 +36,11 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
 
   private final PermissionValidationService permissionValidationService;
 
+  @SuppressWarnings("deprecation")
   private final Map<Integer, PullRequestTriggerSettings> cache = new MapMaker()
     .makeComputingMap(new Function<Integer, PullRequestTriggerSettings>() {
       public PullRequestTriggerSettings apply(Integer repoId) {
+        //noinspection unchecked
         Map<String, String> data = (Map<String, String>) pluginSettings.get(repoId.toString());
         if (data != null) {
           return deserialize(data);
@@ -47,9 +49,11 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
       }
     });
 
+  @SuppressWarnings("deprecation")
   private final Map<Integer, List<String>> branchListCache = new MapMaker()
     .makeComputingMap(new Function<Integer, List<String>>() {
       public List<String> apply(Integer repoId) {
+        //noinspection unchecked
         List<String> data = (List<String>) pluginSettings.get(KEY_BRANCH_LIST +repoId.toString());
         if (data != null) {
           return data;
@@ -58,9 +62,11 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
       }
     });
 
+  @SuppressWarnings("deprecation")
   private final Map<String, BranchSettings> branchCache = new MapMaker()
     .makeComputingMap(new Function<String, BranchSettings>() {
       public BranchSettings apply(String branchAndRepo) {
+        //noinspection unchecked
         Map<String, String> data = (Map<String, String>) pluginSettings.get(branchAndRepo);
         if (data != null) {
           return deserializeBranch(data);
@@ -87,14 +93,19 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   public PullRequestTriggerSettings setPullRequestTriggerSettings(Repository repository, PullRequestTriggerSettings settings) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
     final Map<String, String> data;
+    final Integer repositoryId = repository.getId();
+    if (repositoryId == null) {
+      log.error("Repository id is null when saving settings: " + repository);
+      return null;
+    }
     try {
       data = serialize(settings);
     } catch (NullPointerException e) {
       log.error("Error serializing PR settings object " + settings, e);
       throw e;
     }
-    pluginSettings.put(Integer.toString(repository.getId()), data);
-    cache.remove(repository.getId());
+    pluginSettings.put(Integer.toString(repositoryId), data);
+    cache.remove(repositoryId);
     return deserialize(data);
   }
 
@@ -103,12 +114,14 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     permissionValidationService.validateForRepository(repository, Permission.REPO_READ);
     final List<String> branches = branchListCache.get(repository.getId());
     final List<BranchSettings> branchSettings = new ArrayList<BranchSettings>();
+
     for (String branch : branches) {
       BranchSettings settings = branchCache.get(branchKeyForRepoId(repository, branch));
       if (settings != null) {
         branchSettings.add(settings);
       }
     }
+
     return branchSettings;
   }
 
@@ -116,36 +129,54 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   public void setBranch(Repository repository, String branchName, BranchSettings settings) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
     final String branchKey = branchKeyForRepoId(repository, branchName);
-    final List<String> branches = branchListCache.get(repository.getId());
+    final Integer repositoryId = repository.getId();
+    final List<String> branches = branchListCache.get(repositoryId);
+
+    if (repositoryId == null) {
+      log.error("Repository id is null when saving branch settings: " + repository);
+      return;
+    }
+
     if (!branches.contains(branchName)) {
       branches.add(branchName);
-      pluginSettings.put(KEY_BRANCH_LIST + repository.getId().toString(), branches);
-      branchListCache.remove(repository.getId().toString());
+      pluginSettings.put(KEY_BRANCH_LIST + repositoryId.toString(), branches);
+      branchListCache.remove(repositoryId);
     }
+
     final Map<String, String> data;
+
     try {
       data = serializeBranch(settings);
     } catch (NullPointerException e) {
       log.error("Error serializing PR branch settings object " + settings, e);
       throw e;
     }
+
     pluginSettings.put(branchKey, data);
     branchCache.remove(branchKey);
-    branchListCache.remove(repository.getId());
+    branchListCache.remove(repositoryId);
   }
 
   @Override
   public void deleteBranch(Repository repository, String branchName) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_ADMIN);
     final String branchKey = branchKeyForRepoId(repository, branchName);
-    final List<String> branches = branchListCache.get(repository.getId());
+    final Integer repositoryId = repository.getId();
+    final List<String> branches = branchListCache.get(repositoryId);
+
+    if (repositoryId == null) {
+      log.error("Repository id is null when deleting branch settings: " + repository);
+      return;
+    }
+
     if (branches.contains(branchName)) {
       branches.remove(branchName);
-      pluginSettings.remove(KEY_BRANCH_LIST + repository.getId().toString());
+      pluginSettings.remove(KEY_BRANCH_LIST + repositoryId.toString());
       if (!branches.isEmpty())
-        pluginSettings.put(KEY_BRANCH_LIST + repository.getId().toString(), branches);
-      branchListCache.remove(repository.getId().toString());
+        pluginSettings.put(KEY_BRANCH_LIST + repositoryId.toString(), branches);
+      branchListCache.remove(repositoryId);
     }
+
     pluginSettings.remove(branchKey);
     branchCache.remove(branchKey);
   }
@@ -173,7 +204,8 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   }
 
   private String branchKeyForRepoId(Repository repository, String branch) {
-    return branch + ":" + repository.getId().toString();
+    final Integer repositoryId = repository.getId();
+    return branch + ":" + (repositoryId != null ? repositoryId.toString() : "null");
   }
 
   static public Map<String, String> serialize(PullRequestTriggerSettings settings) {

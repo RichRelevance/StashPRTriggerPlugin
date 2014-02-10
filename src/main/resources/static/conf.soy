@@ -58,11 +58,11 @@
                         {param content}
                             {call aui.form.checkboxField}
                               {param legendContent: 'Enable Bamboo Build Trigger?' /}
-                              {param fields: [[
+                              {param fields: [
                                 'id': 'enabled',
                                 'labelText': 'Enabled',
                                 'isChecked': $prTriggerSettings.enabled
-                                ]] /}
+                                ] /}
                             {/call}
                             {call aui.form.textField}
                                 {param id: 'url' /}

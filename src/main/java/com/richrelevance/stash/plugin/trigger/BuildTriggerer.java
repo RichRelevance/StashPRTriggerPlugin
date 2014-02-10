@@ -1,6 +1,5 @@
 package com.richrelevance.stash.plugin.trigger;
 
-import com.atlassian.stash.pull.PullRequest;
 import com.richrelevance.stash.plugin.settings.BranchSettings;
 import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
 

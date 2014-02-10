@@ -2,7 +2,6 @@ package com.richrelevance.stash.plugin.trigger;
 
 import com.atlassian.stash.event.pull.PullRequestCommentAddedEvent;
 import com.atlassian.stash.event.pull.PullRequestEvent;
-import com.atlassian.stash.event.pull.PullRequestOpenedEvent;
 
 /**
  * Created by dsobral on 1/30/14.

@@ -30,16 +30,19 @@ public final class ImmutablePullRequestTriggerSettings implements PullRequestTri
     return enabled;
   }
 
+  @Nonnull
   @Override
   public String getUrl() {
     return url;
   }
 
+  @Nonnull
   @Override
   public String getUser() {
     return user;
   }
 
+  @Nonnull
   @Override
   public String getPassword() {
     return password;
@@ -55,9 +58,8 @@ public final class ImmutablePullRequestTriggerSettings implements PullRequestTri
     if (enabled != that.enabled) return false;
     if (!password.equals(that.password)) return false;
     if (!url.equals(that.url)) return false;
-    if (!user.equals(that.user)) return false;
+    return user.equals(that.user);
 
-    return true;
   }
 
   @Override

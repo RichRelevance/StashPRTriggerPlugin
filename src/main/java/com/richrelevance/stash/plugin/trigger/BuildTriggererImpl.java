@@ -42,8 +42,7 @@ public class BuildTriggererImpl implements BuildTriggerer {
     final String plan = branchSettings.getPlan();
     final String baseUrl = urlTemplate.replace("$BASEURL", settings.getUrl());
     final String urlWithPlan = baseUrl.replace("$PLAN", urlEncode(plan));
-    final String fullUrl = urlWithPlan.replace("$PRNUMBER", Long.toString(prNumber));
 
-    return fullUrl;
+    return urlWithPlan.replace("$PRNUMBER", Long.toString(prNumber));
   }
 }
