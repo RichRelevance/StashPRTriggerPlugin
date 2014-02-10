@@ -13,9 +13,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.richrelevance.stash.plugin.settings.BranchSettings;
-import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettings;
-
 /**
  *
  * This class is *not* thread-safe, as it depends on mutable state on the instance to

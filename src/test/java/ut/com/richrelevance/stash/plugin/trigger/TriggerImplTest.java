@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import com.atlassian.stash.comment.Comment;
 import com.atlassian.stash.event.pull.PullRequestCommentAddedEvent;
@@ -36,29 +38,40 @@ import com.richrelevance.stash.plugin.settings.PullRequestTriggerSettingsService
  */
 public class TriggerImplTest {
 
+  private static final String url = "fakeUrl";
   private static final String user = "fake user";
   private static final String password = "fake password";
-  private static final String url = "fakeUrl";
-  private static final String retestMsg = "Retest Message";
-  private static final String retestRegex = "(?i)retest this,? please|klaatu barada nikto";
-  private static final PullRequestTriggerSettings settingsEnabled = new ImmutablePullRequestTriggerSettings(true, url,
-    user, password, retestMsg);
 
+  private static final PullRequestTriggerSettings settingsEnabled = new ImmutablePullRequestTriggerSettings(true, url,
+    user, password);
   private static final PullRequestTriggerSettings settingsRegexEnabled = new ImmutablePullRequestTriggerSettings(true, url,
-    user, password, retestRegex);
+    user, password);
 
   private static final PullRequestTriggerSettings settingsDisabled = new ImmutablePullRequestTriggerSettings(false, url,
-    user, password, retestMsg);
+    user, password);
 
   private static final String branchName = "default branch";
   private static final String wildcardBranchName = ".*";
+  private static final String unusedBranchName = "Unused";
   private static final String planName = "StandardPlan";
+  private static final String retestMsg = "Retest this please";
+  private static final String retestRegex = "(?i)retest this,? please|klaatu barada nikto";
+  private static final String alternateMsg = "Alternate Message";
 
   private static final ImmutableBranchSettings immutableBranchSettings =
-    new ImmutableBranchSettings(branchName, planName);
+    new ImmutableBranchSettings(branchName, planName, retestRegex);
 
   private static final ImmutableBranchSettings wildcardBranchSettings =
-    new ImmutableBranchSettings(wildcardBranchName, "somethingElse");
+    new ImmutableBranchSettings(wildcardBranchName, "somethingElse", retestRegex);
+
+  private static final ImmutableBranchSettings alternateBranchSettings =
+    new ImmutableBranchSettings(branchName, "alternatePlan", alternateMsg);
+
+  private static final ImmutableBranchSettings unusedBranchSettings =
+    new ImmutableBranchSettings(unusedBranchName, planName, alternateMsg);
+
+  private static final ImmutableBranchSettings emptyMsgBranchSettings =
+    new ImmutableBranchSettings(branchName, planName, "");
 
   private static final PullRequestTriggerSettingsService settingsServiceEnabled =
     new SettingsService(settingsEnabled, immutableBranchSettings);
@@ -66,11 +79,14 @@ public class TriggerImplTest {
   private static final PullRequestTriggerSettingsService settingsServiceRegexEnabled =
     new SettingsService(settingsRegexEnabled, immutableBranchSettings);
 
+  private static final PullRequestTriggerSettingsService settingsServiceEmptyMsg =
+    new SettingsService(settingsEnabled, emptyMsgBranchSettings);
+
   private static final PullRequestTriggerSettingsService settingsServiceDisabled =
     new SettingsService(settingsDisabled, immutableBranchSettings);
 
   private static final PullRequestTriggerSettingsService settingsServiceEnabledMultiBranch =
-    new SettingsService(settingsEnabled, immutableBranchSettings, wildcardBranchSettings);
+    new SettingsService(settingsEnabled, immutableBranchSettings, wildcardBranchSettings, alternateBranchSettings, unusedBranchSettings);
 
   @Test
   public void automaticTriggerBuildAlwaysBuildsTest() {
@@ -142,6 +158,33 @@ public class TriggerImplTest {
   }
 
   @Test
+  public void onDemandTriggersOnlyMatchingBranchesWithMatchingMessagesTest() {
+    PullRequestCommentAddedEvent event = mock(PullRequestCommentAddedEvent.class);
+    Comment comment = mock(Comment.class);
+    PullRequest pullRequest = mock(PullRequest.class);
+    PullRequestRef ref = mock(PullRequestRef.class);
+    Repository repository = mock(Repository.class);
+    BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
+
+    when(event.getComment()).thenReturn(comment);
+    when(comment.getText()).thenReturn(alternateMsg);
+
+    when(event.getPullRequest()).thenReturn(pullRequest);
+    when(pullRequest.getToRef()).thenReturn(ref);
+    when(ref.getRepository()).thenReturn(repository);
+    when(ref.getId()).thenReturn(branchName);
+    when(pullRequest.getId()).thenReturn(1L);
+
+    Trigger trigger = new TriggerImpl(settingsServiceEnabledMultiBranch, buildTriggerer);
+
+    trigger.onDemandTrigger(event);
+
+    InOrder inOrder = inOrder(buildTriggerer);
+    inOrder.verify(buildTriggerer).invoke(1L, settingsEnabled, alternateBranchSettings);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
   public void onDemandDoesNotTriggerBuildsIfMessageDoesNotMatchSettingsTest() {
     PullRequestCommentAddedEvent event = mock(PullRequestCommentAddedEvent.class);
     Comment comment = mock(Comment.class);
@@ -155,8 +198,34 @@ public class TriggerImplTest {
     when(event.getPullRequest()).thenReturn(pullRequest);
     when(pullRequest.getToRef()).thenReturn(ref);
     when(ref.getRepository()).thenReturn(repository);
+    when(ref.getId()).thenReturn(branchName);
+    when(pullRequest.getId()).thenReturn(1L);
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabled, buildTriggerer);
+
+    trigger.onDemandTrigger(event);
+
+    verify(buildTriggerer, never()).invoke(anyLong(), any(PullRequestTriggerSettings.class), any(BranchSettings.class));
+  }
+
+  @Test
+  public void onDemandDoesNotTriggerBuildsIfMessageIsEmptyTest() {
+    PullRequestCommentAddedEvent event = mock(PullRequestCommentAddedEvent.class);
+    Comment comment = mock(Comment.class);
+    PullRequest pullRequest = mock(PullRequest.class);
+    PullRequestRef ref = mock(PullRequestRef.class);
+    Repository repository = mock(Repository.class);
+    BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
+
+    when(event.getComment()).thenReturn(comment);
+    when(comment.getText()).thenReturn(retestMsg);
+    when(event.getPullRequest()).thenReturn(pullRequest);
+    when(pullRequest.getToRef()).thenReturn(ref);
+    when(ref.getRepository()).thenReturn(repository);
+    when(ref.getId()).thenReturn(branchName);
+    when(pullRequest.getId()).thenReturn(1L);
+
+    Trigger trigger = new TriggerImpl(settingsServiceEmptyMsg, buildTriggerer);
 
     trigger.onDemandTrigger(event);
 
@@ -178,13 +247,13 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceDisabled, buildTriggerer);
 
-    trigger.triggerBuild(event);
+    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
 
     verify(buildTriggerer, never()).invoke(anyLong(), any(PullRequestTriggerSettings.class), any(BranchSettings.class));
   }
 
   @Test
-  public void triggerBuildDoesNotDoTriggerBuildsIfBranchSettingsIsNullTest() {
+  public void triggerBuildDoesNotTriggerBuildsIfBranchSettingsIsNullTest() {
     BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
     PullRequestEvent event = mock(PullRequestEvent.class);
     PullRequest pullRequest = mock(PullRequest.class);
@@ -198,7 +267,7 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabled, buildTriggerer);
 
-    trigger.triggerBuild(event);
+    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
 
     verify(buildTriggerer, never()).invoke(anyLong(), any(PullRequestTriggerSettings.class), any(BranchSettings.class));
   }
@@ -219,13 +288,13 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabled, buildTriggerer);
 
-    trigger.triggerBuild(event);
+    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
 
     verify(buildTriggerer).invoke(1L, settingsEnabled, immutableBranchSettings);
   }
 
   @Test
-  public void triggerBuildTriggersMultipleBuildsIfMoreThanOneBranchMatchesTest() {
+  public void triggerBuildTriggersMultipleBuildsIfMoreThanOneBranchMatchesNameTest() {
     BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
     PullRequestEvent event = mock(PullRequestEvent.class);
     PullRequest pullRequest = mock(PullRequest.class);
@@ -240,7 +309,7 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabledMultiBranch, buildTriggerer);
 
-    trigger.triggerBuild(event);
+    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
 
     verify(buildTriggerer).invoke(1L, settingsEnabled, immutableBranchSettings);
     verify(buildTriggerer).invoke(1L, settingsEnabled, wildcardBranchSettings);

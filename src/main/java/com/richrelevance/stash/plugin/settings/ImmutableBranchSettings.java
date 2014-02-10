@@ -7,10 +7,12 @@ import javax.annotation.Nonnull;
 public final class ImmutableBranchSettings implements BranchSettings {
   private final @Nonnull String name;
   private final @Nonnull String plan;
+  private final @Nonnull String retestMsg;
 
-  public ImmutableBranchSettings(@Nonnull String name, @Nonnull String plan) {
+  public ImmutableBranchSettings(@Nonnull String name, @Nonnull String plan, @Nonnull String retestMsg) {
     this.name = name;
     this.plan = plan;
+    this.retestMsg = retestMsg;
   }
 
   @Override
@@ -24,6 +26,20 @@ public final class ImmutableBranchSettings implements BranchSettings {
   }
 
   @Override
+  public String getRetestMsg() {
+    return retestMsg;
+  }
+
+  @Override
+  public String toString() {
+    return "ImmutableBranchSettings{" +
+      "name='" + name + '\'' +
+      ", plan='" + plan + '\'' +
+      ", retestMsg='" + retestMsg + '\'' +
+      '}';
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
@@ -32,6 +48,7 @@ public final class ImmutableBranchSettings implements BranchSettings {
 
     if (!name.equals(that.name)) return false;
     if (!plan.equals(that.plan)) return false;
+    if (!retestMsg.equals(that.retestMsg)) return false;
 
     return true;
   }
@@ -40,14 +57,8 @@ public final class ImmutableBranchSettings implements BranchSettings {
   public int hashCode() {
     int result = name.hashCode();
     result = 31 * result + plan.hashCode();
+    result = 31 * result + retestMsg.hashCode();
     return result;
   }
 
-  @Override
-  public String toString() {
-    return "ImmutableBranchSettings{" +
-      "name='" + name + '\'' +
-      ", plan='" + plan + '\'' +
-      '}';
-  }
 }

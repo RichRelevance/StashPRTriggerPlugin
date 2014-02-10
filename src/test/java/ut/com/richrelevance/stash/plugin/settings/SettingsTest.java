@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -38,15 +39,15 @@ public class SettingsTest {
   private static final String url = "fakeUrl";
   private static final String retestMsg = "Retest Message";
   private static final PullRequestTriggerSettings settingsEnabled = new ImmutablePullRequestTriggerSettings(true, url,
-    user, password, retestMsg);
+    user, password);
 
   private static final String branchName = "default branch";
   private static final String anotherBranchName = "another branch";
   private static final String planName = "StandardPlan";
   private static final BranchSettings immutableBranchSettings = new ImmutableBranchSettings(branchName,
-    planName);
+    planName, retestMsg);
   private static final BranchSettings anotherBranchSettings = new ImmutableBranchSettings(anotherBranchName,
-    "somethingElse");
+    "somethingElse", retestMsg);
 
   private static final Map<String, String> settingsMapEnabled = DefaultPullRequestTriggerSettingsService.serialize(settingsEnabled);
   private static final Map<String, String> branchSettingsMap = DefaultPullRequestTriggerSettingsService.serializeBranch(immutableBranchSettings);
@@ -59,11 +60,12 @@ public class SettingsTest {
     assertFalse("Settings are enabled by default, but should be disabled", settings.isEnabled());
   }
 
-  @Test
+  // This property is now obtained through the UI layer
+  @Test @Ignore
   public void retestThisPleaseIsTheDefaultRetestMessage() {
-    PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings();
+    BranchSettings branchSettings = immutableBranchSettings;
 
-    final String retestMsg = settings.getRetestMsg();
+    final String retestMsg = branchSettings.getRetestMsg();
 
     assertTrue("Retest this please".matches(retestMsg));
   }

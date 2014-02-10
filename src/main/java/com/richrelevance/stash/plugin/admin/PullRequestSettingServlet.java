@@ -106,6 +106,7 @@ public class PullRequestSettingServlet extends HttpServlet {
   private StatusMessages addBranch(HttpServletRequest req, Repository repository) {
     String name = req.getParameter("name"); name = name != null ? name.trim() : "";
     String plan = req.getParameter("plan"); plan = plan != null ? plan.trim() : "";
+    String retestMsg = req.getParameter("retest-msg"); retestMsg = retestMsg != null ? retestMsg.trim() : "";
 
     if (name.isEmpty() || plan.isEmpty()) {
       final String errorMessage = String.format("Empty field not allowed (name '%s', plan '%s')", name, plan);
@@ -113,7 +114,16 @@ public class PullRequestSettingServlet extends HttpServlet {
       return SingleMessage.error(errorMessage);
     }
 
-    BranchSettings settings = new ImmutableBranchSettings(name, plan);
+    try {
+      Pattern.compile(retestMsg);
+    } catch (PatternSyntaxException e) {
+      final String errorMessage = String.format("Illegal retest message pattern '%s' at index %d: %s", retestMsg,
+        e.getIndex(), e.getDescription());
+      log.info("Ignoring branch update: " + errorMessage, e);
+      return SingleMessage.error(errorMessage);
+    }
+
+    BranchSettings settings = new ImmutableBranchSettings(name, plan, retestMsg);
 
     pullRequestTriggerSettingsService.setBranch(repository, name, settings);
 
@@ -137,25 +147,15 @@ public class PullRequestSettingServlet extends HttpServlet {
     String url = req.getParameter("url"); url = url != null ? url.trim() : "";
     String user = req.getParameter("user"); user = user != null ? user.trim() : "";
     String password = req.getParameter("password"); password = password != null ? password.trim() : "";
-    String retestMsg = req.getParameter("retest-msg"); retestMsg = retestMsg != null ? retestMsg.trim() : "";
 
-    if (url.isEmpty() || user.isEmpty() || password.isEmpty() || retestMsg.isEmpty()) {
-      final String errorMessage = String.format("Empty field not allowed (url '%s', user '%s', password '%s', " +
-        "retestMsg '%s'", url, user, password.isEmpty() ? "" : "*********", retestMsg);
+    if (url.isEmpty() || user.isEmpty() || password.isEmpty()) {
+      final String errorMessage = String.format("Empty field not allowed (url '%s', user '%s', password '%s', ",
+        url, user, password.isEmpty() ? "" : "*********");
       log.info("Ignoring settings update: " + errorMessage);
       return SingleMessage.error(errorMessage);
     }
 
-    try {
-      Pattern.compile(retestMsg);
-    } catch (PatternSyntaxException e) {
-      final String errorMessage = String.format("Illegal retest message pattern '%s' at index %d: %s", retestMsg,
-        e.getIndex(), e.getDescription());
-      log.info("Ignoring settings update: " + errorMessage, e);
-      return SingleMessage.error(errorMessage);
-    }
-
-    PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings(enabled, url, user, password, retestMsg);
+    PullRequestTriggerSettings settings = new ImmutablePullRequestTriggerSettings(enabled, url, user, password);
 
     pullRequestTriggerSettingsService.setPullRequestTriggerSettings(repository, settings);
 

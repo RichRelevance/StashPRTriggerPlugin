@@ -182,7 +182,6 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     data.put(KEY_URL, settings.getUrl());
     data.put(KEY_USER, settings.getUser());
     data.put(KEY_PASSWORD, settings.getPassword());
-    data.put(KEY_RETEST_MSG, settings.getRetestMsg());
     return data;
   }
 
@@ -191,8 +190,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
       Boolean.parseBoolean(settings.get(KEY_ENABLED)),
       settings.get(KEY_URL),
       settings.get(KEY_USER),
-      settings.get(KEY_PASSWORD),
-      settings.get(KEY_RETEST_MSG)
+      settings.get(KEY_PASSWORD)
     );
   }
 
@@ -200,13 +198,15 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
     Map<String, String> data = new HashMap<String, String>();
     data.put(KEY_BRANCH_NAME, settings.getName());
     data.put(KEY_PLAN, settings.getPlan());
+    data.put(KEY_RETEST_MSG, settings.getRetestMsg());
     return data;
   }
 
   static public BranchSettings deserializeBranch(Map<String, String> settings) {
     return new ImmutableBranchSettings(
       settings.get(KEY_BRANCH_NAME),
-      settings.get(KEY_PLAN)
+      settings.get(KEY_PLAN),
+      settings.get(KEY_RETEST_MSG)
     );
   }
 }

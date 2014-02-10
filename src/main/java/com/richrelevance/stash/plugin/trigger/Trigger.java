@@ -33,5 +33,5 @@ public interface Trigger {
    *
    * This method is used by automaticTrigger and onDemandTrigger.
    */
-  void triggerBuild(PullRequestEvent pullRequestEvent);
+  void triggerBuild(PullRequestEvent pullRequestEvent, BranchPredicate predicate);
 }

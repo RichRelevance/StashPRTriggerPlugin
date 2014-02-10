@@ -85,13 +85,6 @@
                                 {param descriptionText: 'Bamboo REST API Password' /}
                                 {param isRequired: true /}
                             {/call}
-                            {call aui.form.textField}
-                                {param id: 'retest-msg' /}
-                                {param value: $prTriggerSettings['retestMsg'] /}
-                                {param labelContent: 'Retest Message' /}
-                                {param descriptionText: 'Pull Request Message that will trigger retest (regex allowed)' /}
-                                {param isRequired: true /}
-                            {/call}
                             {call aui.form.buttons}
                                 {param content}
                                     {call aui.form.submit}
@@ -137,6 +130,13 @@
                                             {param isRequired: true /}
                                             {param extraClasses: 'hidden' /}
                                         {/call}
+                                        {call aui.form.textField}
+                                            {param id: 'retest-msg' /}
+                                            {param value: $branch.retestMsg /}
+                                            {param labelContent: 'Retest Message' /}
+                                            {param descriptionText: 'Pull Request Message that will trigger retest (regex allowed)' /}
+                                            {param isRequired: true /}
+                                        {/call}
                                         {call aui.form.buttons}
                                             {param content}
                                                 {call aui.form.submit}
@@ -178,6 +178,13 @@
                                 {param id: 'plan' /}
                                 {param labelContent: 'Plan' /}
                                 {param descriptionText: 'Bamboo Build Plan (PROJ-PLAN)' /}
+                                {param isRequired: true /}
+                            {/call}
+                            {call aui.form.textField}
+                                {param id: 'retest-msg' /}
+                                {param labelContent: 'Retest Message' /}
+                                {param value: '(?i)retest this,? please|klaatu barada nikto' /}
+                                {param descriptionText: 'Pull Request Message that will trigger retest (regex allowed)' /}
                                 {param isRequired: true /}
                             {/call}
                             {call aui.form.buttons}

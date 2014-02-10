@@ -21,12 +21,12 @@ public class BuildTriggererImplTest {
   private static final String url = "fakeUrl";
   private static final String retestMsg = "Retest Message";
   private static final PullRequestTriggerSettings settingsEnabled = new ImmutablePullRequestTriggerSettings(true, url,
-    user, password, retestMsg);
+    user, password);
 
   private static final String branchName = "default branch";
   private static final String planName = "StandardPlan";
   private static final ImmutableBranchSettings immutableBranchSettings = new ImmutableBranchSettings(branchName,
-    planName);
+    planName, retestMsg);
 
   @Test
   public void testInvoke() {

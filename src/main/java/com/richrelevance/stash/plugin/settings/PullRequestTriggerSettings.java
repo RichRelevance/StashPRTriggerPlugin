@@ -7,5 +7,4 @@ public interface PullRequestTriggerSettings {
   String getUrl();
   String getUser();
   String getPassword();
-  String getRetestMsg();
 }
