@@ -42,9 +42,9 @@ public class SettingsTest {
   private static final String branchName = "default branch";
   private static final String anotherBranchName = "another branch";
   private static final String planName = "StandardPlan";
-  private static final BranchSettings immutableBranchSettings = new ImmutableBranchSettings(branchName,
+  private static final BranchSettings immutableBranchSettings = new ImmutableBranchSettings(true, branchName,
     planName, retestMsg);
-  private static final BranchSettings anotherBranchSettings = new ImmutableBranchSettings(anotherBranchName,
+  private static final BranchSettings anotherBranchSettings = new ImmutableBranchSettings(true, anotherBranchName,
     "somethingElse", retestMsg);
 
   private static final Map<String, String> settingsMapEnabled = DefaultPullRequestTriggerSettingsService.serialize(settingsEnabled);

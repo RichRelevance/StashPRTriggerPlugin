@@ -5,6 +5,8 @@ import javax.annotation.Nonnull;
 /**
  */
 public interface BranchSettings {
+  boolean isAutomaticBuildEnabled();
+
   @Nonnull
   String getName();
 

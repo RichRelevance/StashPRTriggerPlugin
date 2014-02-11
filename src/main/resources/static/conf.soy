@@ -58,11 +58,11 @@
                         {param content}
                             {call aui.form.checkboxField}
                               {param legendContent: 'Enable Bamboo Build Trigger?' /}
-                              {param fields: [
+                              {param fields: [[
                                 'id': 'enabled',
                                 'labelText': 'Enabled',
                                 'isChecked': $prTriggerSettings.enabled
-                                ] /}
+                                ]] /}
                             {/call}
                             {call aui.form.textField}
                                 {param id: 'url' /}
@@ -115,6 +115,14 @@
                                 {call aui.form.form}
                                     {param action: '' /}
                                     {param content}
+                                        {call aui.form.checkboxField}
+                                          {param legendContent: 'Build Automatically?' /}
+                                          {param fields: [[
+                                            'id': 'automatic-build-enabled',
+                                            'labelText': 'Build Automatically',
+                                            'isChecked': $branch.automaticBuildEnabled
+                                            ]] /}
+                                        {/call}
                                         {call aui.form.textField}
                                             {param id: 'plan' /}
                                             {param labelContent: 'Plan' /}
@@ -168,6 +176,14 @@
                     {call aui.form.form}
                         {param action: '' /}
                         {param content}
+                            {call aui.form.checkboxField}
+                              {param legendContent: 'Build Automatically?' /}
+                              {param fields: [[
+                                'id': 'automatic-build-enabled',
+                                'labelText': 'Build Automatically',
+                                'isChecked': true
+                                ]] /}
+                            {/call}
                             {call aui.form.textField}
                                 {param id: 'name' /}
                                 {param labelContent: 'Branch' /}

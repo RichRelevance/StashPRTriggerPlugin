@@ -21,6 +21,7 @@ import com.atlassian.stash.pull.PullRequest;
 import com.atlassian.stash.pull.PullRequestRef;
 import com.atlassian.stash.repository.Repository;
 import com.google.common.collect.Lists;
+import com.richrelevance.stash.plugin.trigger.BranchPredicate;
 import com.richrelevance.stash.plugin.trigger.BuildTriggerer;
 import com.richrelevance.stash.plugin.trigger.Trigger;
 import com.richrelevance.stash.plugin.trigger.TriggerImpl;
@@ -56,19 +57,22 @@ public class TriggerImplTest {
   private static final String alternateMsg = "Alternate Message";
 
   private static final ImmutableBranchSettings immutableBranchSettings =
-    new ImmutableBranchSettings(branchName, planName, retestRegex);
+    new ImmutableBranchSettings(true, branchName, planName, retestRegex);
 
   private static final ImmutableBranchSettings wildcardBranchSettings =
-    new ImmutableBranchSettings(wildcardBranchName, "somethingElse", retestRegex);
+    new ImmutableBranchSettings(true, wildcardBranchName, "somethingElse", retestRegex);
 
   private static final ImmutableBranchSettings alternateBranchSettings =
-    new ImmutableBranchSettings(branchName, "alternatePlan", alternateMsg);
+    new ImmutableBranchSettings(true, branchName, "alternatePlan", alternateMsg);
 
   private static final ImmutableBranchSettings unusedBranchSettings =
-    new ImmutableBranchSettings(unusedBranchName, planName, alternateMsg);
+    new ImmutableBranchSettings(true, unusedBranchName, planName, alternateMsg);
 
   private static final ImmutableBranchSettings emptyMsgBranchSettings =
-    new ImmutableBranchSettings(branchName, planName, "");
+    new ImmutableBranchSettings(true, branchName, planName, "");
+
+  private static final ImmutableBranchSettings onDemandOnlyBranchSettings =
+    new ImmutableBranchSettings(false, branchName, planName, retestRegex);
 
   private static final PullRequestTriggerSettingsService settingsServiceEnabled =
     new SettingsService(settingsEnabled, immutableBranchSettings);
@@ -82,11 +86,14 @@ public class TriggerImplTest {
   private static final PullRequestTriggerSettingsService settingsServiceDisabled =
     new SettingsService(settingsDisabled, immutableBranchSettings);
 
+  private static final PullRequestTriggerSettingsService settingsServiceOnDemand =
+    new SettingsService(settingsEnabled, onDemandOnlyBranchSettings);
+
   private static final PullRequestTriggerSettingsService settingsServiceEnabledMultiBranch =
     new SettingsService(settingsEnabled, immutableBranchSettings, wildcardBranchSettings, alternateBranchSettings, unusedBranchSettings);
 
   @Test
-  public void automaticTriggerBuildAlwaysBuildsTest() {
+  public void automaticTriggerBuildIfBranchAutomaticBuildIsEnabledTest() {
     BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
     PullRequestEvent event = mock(PullRequestEvent.class);
     PullRequest pullRequest = mock(PullRequest.class);
@@ -104,6 +111,27 @@ public class TriggerImplTest {
     trigger.automaticTrigger(event);
 
     verify(buildTriggerer).invoke(1L, settingsEnabled, immutableBranchSettings);
+  }
+
+  @Test
+  public void automaticTriggerDoesNotBuildIfBranchAutomaticBuildIsDisabledTest() {
+    BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
+    PullRequestEvent event = mock(PullRequestEvent.class);
+    PullRequest pullRequest = mock(PullRequest.class);
+    PullRequestRef ref = mock(PullRequestRef.class);
+    Repository repository = mock(Repository.class);
+
+    when(event.getPullRequest()).thenReturn(pullRequest);
+    when(pullRequest.getToRef()).thenReturn(ref, ref);
+    when(ref.getRepository()).thenReturn(repository);
+    when(ref.getId()).thenReturn(branchName);
+    when(pullRequest.getId()).thenReturn(1L);
+
+    Trigger trigger = new TriggerImpl(settingsServiceOnDemand, buildTriggerer);
+
+    trigger.automaticTrigger(event);
+
+    verify(buildTriggerer, never()).invoke(anyLong(), any(PullRequestTriggerSettings.class), any(BranchSettings.class));
   }
 
   @Test
@@ -244,7 +272,7 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceDisabled, buildTriggerer);
 
-    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
+    trigger.triggerBuild(event, AlwaysTruePredicate.instance);
 
     verify(buildTriggerer, never()).invoke(anyLong(), any(PullRequestTriggerSettings.class), any(BranchSettings.class));
   }
@@ -264,13 +292,13 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabled, buildTriggerer);
 
-    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
+    trigger.triggerBuild(event, AlwaysTruePredicate.instance);
 
     verify(buildTriggerer, never()).invoke(anyLong(), any(PullRequestTriggerSettings.class), any(BranchSettings.class));
   }
 
   @Test
-  public void triggerBuildBuildsIfEnabledAndBranchSettingsExistTest() {
+  public void triggerBuildBuildsIfEnabledAndBranchSettingsExistAndAutomaticBuildIsEnabledTest() {
     BuildTriggerer buildTriggerer = mock(BuildTriggerer.class);
     PullRequestEvent event = mock(PullRequestEvent.class);
     PullRequest pullRequest = mock(PullRequest.class);
@@ -285,7 +313,7 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabled, buildTriggerer);
 
-    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
+    trigger.triggerBuild(event, AlwaysTruePredicate.instance);
 
     verify(buildTriggerer).invoke(1L, settingsEnabled, immutableBranchSettings);
   }
@@ -306,7 +334,7 @@ public class TriggerImplTest {
 
     Trigger trigger = new TriggerImpl(settingsServiceEnabledMultiBranch, buildTriggerer);
 
-    trigger.triggerBuild(event, TriggerImpl.AutomaticPredicate.instance);
+    trigger.triggerBuild(event, AlwaysTruePredicate.instance);
 
     verify(buildTriggerer).invoke(1L, settingsEnabled, immutableBranchSettings);
     verify(buildTriggerer).invoke(1L, settingsEnabled, wildcardBranchSettings);
@@ -357,4 +385,15 @@ public class TriggerImplTest {
     }
   }
 
+  private static class AlwaysTruePredicate implements BranchPredicate {
+    public static final AlwaysTruePredicate instance = new AlwaysTruePredicate();
+
+    private AlwaysTruePredicate() {
+    }
+
+    @Override
+    public boolean matches(BranchSettings branchSettings) {
+      return true;
+    }
+  }
 }

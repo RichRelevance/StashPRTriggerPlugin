@@ -104,6 +104,7 @@ public class PullRequestSettingServlet extends HttpServlet {
   }
 
   private StatusMessages addBranch(HttpServletRequest req, Repository repository) {
+    Boolean automaticBuildEnabled = (req.getParameter("automatic-build-enabled") != null);
     String name = req.getParameter("name"); name = name != null ? name.trim() : "";
     String plan = req.getParameter("plan"); plan = plan != null ? plan.trim() : "";
     String retestMsg = req.getParameter("retest-msg"); retestMsg = retestMsg != null ? retestMsg.trim() : "";
@@ -124,7 +125,7 @@ public class PullRequestSettingServlet extends HttpServlet {
       return SingleMessage.error(errorMessage);
     }
 
-    BranchSettings settings = new ImmutableBranchSettings(name, plan, retestMsg);
+    BranchSettings settings = new ImmutableBranchSettings(automaticBuildEnabled, name, plan, retestMsg);
 
     pullRequestTriggerSettingsService.setBranch(repository, name, settings);
 

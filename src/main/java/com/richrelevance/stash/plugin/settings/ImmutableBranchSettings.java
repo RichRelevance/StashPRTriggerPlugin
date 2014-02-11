@@ -5,14 +5,21 @@ import javax.annotation.Nonnull;
 /**
  */
 public final class ImmutableBranchSettings implements BranchSettings {
+  private boolean automaticBuildEnabled;
   private final @Nonnull String name;
   private final @Nonnull String plan;
   private final @Nonnull String retestMsg;
 
-  public ImmutableBranchSettings(@Nonnull String name, @Nonnull String plan, @Nonnull String retestMsg) {
+  public ImmutableBranchSettings(boolean automaticBuildEnabled, @Nonnull String name, @Nonnull String plan, @Nonnull String retestMsg) {
+    this.automaticBuildEnabled = automaticBuildEnabled;
     this.name = name;
     this.plan = plan;
     this.retestMsg = retestMsg;
+  }
+
+  @Override
+  public boolean isAutomaticBuildEnabled() {
+    return automaticBuildEnabled;
   }
 
   @Nonnull

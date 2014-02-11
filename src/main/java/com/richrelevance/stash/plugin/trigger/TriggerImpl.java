@@ -65,7 +65,7 @@ public class TriggerImpl implements Trigger {
     return pullRequest.getToRef().getRepository();
   }
 
-  public static class AutomaticPredicate implements BranchPredicate {
+  private static class AutomaticPredicate implements BranchPredicate {
     public static final AutomaticPredicate instance = new AutomaticPredicate();
 
     private AutomaticPredicate() {
@@ -73,7 +73,7 @@ public class TriggerImpl implements Trigger {
 
     @Override
     public boolean matches(BranchSettings branchSettings) {
-      return true;
+      return branchSettings.isAutomaticBuildEnabled();
     }
   }
 

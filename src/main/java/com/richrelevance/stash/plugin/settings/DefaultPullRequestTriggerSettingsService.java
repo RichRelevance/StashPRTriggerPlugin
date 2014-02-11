@@ -30,6 +30,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   private static final String KEY_URL = "url";
   private static final String KEY_USER = "user";
   private static final String KEY_PASSWORD = "password";
+  private static final String KEY_AUTOMATIC_BUILD_ENABLED = "automaticBuildEnabled";
   private static final String KEY_PLAN = "plan";
   private static final String KEY_RETEST_MSG = "retestMsg";
   private static final String KEY_BRANCH_LIST = "branchList:";
@@ -228,6 +229,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
 
   static public Map<String, String> serializeBranch(BranchSettings settings) {
     Map<String, String> data = new HashMap<String, String>();
+    data.put(KEY_AUTOMATIC_BUILD_ENABLED, Boolean.toString(settings.isAutomaticBuildEnabled()));
     data.put(KEY_BRANCH_NAME, settings.getName());
     data.put(KEY_PLAN, settings.getPlan());
     data.put(KEY_RETEST_MSG, settings.getRetestMsg());
@@ -236,6 +238,7 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
 
   static public BranchSettings deserializeBranch(Map<String, String> settings) {
     return new ImmutableBranchSettings(
+      Boolean.parseBoolean(settings.get(KEY_AUTOMATIC_BUILD_ENABLED)),
       settings.get(KEY_BRANCH_NAME),
       settings.get(KEY_PLAN),
       settings.get(KEY_RETEST_MSG)
