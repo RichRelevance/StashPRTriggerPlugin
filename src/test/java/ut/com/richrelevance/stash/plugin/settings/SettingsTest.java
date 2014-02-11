@@ -42,14 +42,21 @@ public class SettingsTest {
   private static final String branchName = "default branch";
   private static final String anotherBranchName = "another branch";
   private static final String planName = "StandardPlan";
-  private static final BranchSettings immutableBranchSettings = new ImmutableBranchSettings(true, branchName,
-    planName, retestMsg);
-  private static final BranchSettings anotherBranchSettings = new ImmutableBranchSettings(true, anotherBranchName,
-    "somethingElse", retestMsg);
+  private static final String regexBranchPattern = "(default|another) branch";
+
+  private static final BranchSettings immutableBranchSettings =
+    new ImmutableBranchSettings(true, branchName, planName, retestMsg);
+
+  private static final BranchSettings anotherBranchSettings =
+    new ImmutableBranchSettings(true, "another", "somethingElse", retestMsg);
+
+  private static final BranchSettings regexBranchSettings =
+    new ImmutableBranchSettings(true, regexBranchPattern, planName, retestMsg);
 
   private static final Map<String, String> settingsMapEnabled = DefaultPullRequestTriggerSettingsService.serialize(settingsEnabled);
   private static final Map<String, String> branchSettingsMap = DefaultPullRequestTriggerSettingsService.serializeBranch(immutableBranchSettings);
   private static final Map<String, String> anotherBranchMap = DefaultPullRequestTriggerSettingsService.serializeBranch(anotherBranchSettings);
+  private static final Map<String, String> regexBranchMap = DefaultPullRequestTriggerSettingsService.serializeBranch(regexBranchSettings);
 
   @Test
   public void settingsAreDisabledByDefaultTest() {
@@ -200,15 +207,14 @@ public class SettingsTest {
 
     when(repository.getId()).thenReturn(1);
     when(factory.createSettingsForKey(PluginMetadata.getPluginKey())).thenReturn(pluginSettings);
-    when(pluginSettings.get("branchList:1")).thenReturn(expandedBranchList());
-    when(pluginSettings.get(branchName + ":1")).thenReturn(branchSettingsMap);
-    when(pluginSettings.get(anotherBranchName + ":1")).thenReturn(anotherBranchMap);
+    when(pluginSettings.get("branchList:1")).thenReturn(regexBranchList());
+    when(pluginSettings.get(regexBranchPattern + ":1")).thenReturn(regexBranchMap);
 
     final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
 
-    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, "(default|another) branch");
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, anotherBranchName);
 
-    assertEquals(Lists.newArrayList(immutableBranchSettings, anotherBranchSettings), settingsList);
+    assertEquals(Lists.newArrayList(regexBranchSettings), settingsList);
   }
 
   @Test
@@ -226,7 +232,7 @@ public class SettingsTest {
 
     final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
 
-    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, "another");
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, anotherBranchName);
 
     assertEquals(Lists.newArrayList(anotherBranchSettings), settingsList);
   }
@@ -240,15 +246,15 @@ public class SettingsTest {
 
     when(repository.getId()).thenReturn(1);
     when(factory.createSettingsForKey(PluginMetadata.getPluginKey())).thenReturn(pluginSettings);
-    when(pluginSettings.get("branchList:1")).thenReturn(expandedBranchList());
+    when(pluginSettings.get("branchList:1")).thenReturn(regexExpandedBranchList());
     when(pluginSettings.get(branchName + ":1")).thenReturn(branchSettingsMap);
-    when(pluginSettings.get(anotherBranchName + ":1")).thenReturn(anotherBranchMap);
+    when(pluginSettings.get(regexBranchPattern + ":1")).thenReturn(regexBranchMap);
 
     final DefaultPullRequestTriggerSettingsService service = new DefaultPullRequestTriggerSettingsService(permService, factory);
 
-    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, "branch");
+    final List<BranchSettings> settingsList = service.getBranchSettingsForBranch(repository, branchName);
 
-    assertEquals(Lists.newArrayList(immutableBranchSettings, anotherBranchSettings), settingsList);
+    assertEquals(Lists.newArrayList(immutableBranchSettings, regexBranchSettings), settingsList);
   }
 
   @Test
@@ -342,10 +348,23 @@ public class SettingsTest {
     return expandedBranchList;
   }
 
+  private static List<String> regexExpandedBranchList() {
+    final List<String> expandedBranchList = expectedBranchList();
+    expandedBranchList.add(regexBranchPattern);
+    return expandedBranchList;
+  }
+
   private static List<String> reducedBranchList() {
     final List<String> reducedBranchList = new ArrayList<String>();
 
     reducedBranchList.add(anotherBranchName);
     return reducedBranchList;
+  }
+
+  private static List<String> regexBranchList() {
+    final List<String> regexBranchList = new ArrayList<String>();
+
+    regexBranchList.add(regexBranchPattern);
+    return regexBranchList;
   }
 }

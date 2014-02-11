@@ -183,22 +183,22 @@ public class DefaultPullRequestTriggerSettingsService implements PullRequestTrig
   }
 
   @Override
-  public List<BranchSettings> getBranchSettingsForBranch(Repository repository, String branchPattern) {
+  public List<BranchSettings> getBranchSettingsForBranch(Repository repository, String branchName) {
     permissionValidationService.validateForRepository(repository, Permission.REPO_READ);
-    final List<String> branches = branchListCache.get(repository.getId());
+    final List<String> branchList = branchListCache.get(repository.getId());
     final List<BranchSettings> result = new ArrayList<BranchSettings>();
-    final Pattern regexPattern;
 
-    try {
-      regexPattern = Pattern.compile(branchPattern);
-    } catch (PatternSyntaxException e) {
-      log.error(String.format("Invalid regex for branch configuration: %s", branchPattern), e);
-      return new ArrayList<BranchSettings>();
-    }
+    for (String branchPattern : branchList) {
+      final Pattern regexPattern;
 
-    for (String branch : branches) {
-      if (regexPattern.matcher(branch).find()) {
-        result.add(branchCache.get(branchKeyForRepoId(repository, branch)));
+      try {
+        regexPattern = Pattern.compile(branchPattern);
+      } catch (PatternSyntaxException e) {
+        log.error(String.format("Invalid regex for branch configuration: %s", branchName), e);
+        return new ArrayList<BranchSettings>();
+      }
+      if (regexPattern.matcher(branchName).find()) {
+        result.add(branchCache.get(branchKeyForRepoId(repository, branchPattern)));
       }
     }
     return result;

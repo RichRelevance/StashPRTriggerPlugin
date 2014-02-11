@@ -48,8 +48,9 @@ public class TriggerImpl implements Trigger {
     if (prNumber != null) {
       if (settings.isEnabled()) {
         for (BranchSettings branchSettings : branchSettingsList) {
-          if (predicate.matches(branchSettings))
+          if (predicate.matches(branchSettings)) {
             buildTriggerer.invoke(prNumber, settings, branchSettings);
+          }
         }
       }
     } else {
