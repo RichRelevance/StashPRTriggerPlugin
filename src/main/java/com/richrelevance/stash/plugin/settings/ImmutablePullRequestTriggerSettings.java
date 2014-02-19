@@ -14,7 +14,6 @@ public final class ImmutablePullRequestTriggerSettings implements PullRequestTri
     this.url = "http://localhost/bamboo";
     this.user = "user";
     this.password = "password";
-//    this.retestMsg = "(?i)retest this,? please|klaatu barada nikto";
   }
 
   public ImmutablePullRequestTriggerSettings(boolean enabled, @Nonnull String url, @Nonnull String user,
