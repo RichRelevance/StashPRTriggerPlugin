@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.richrelevance.stash.plugin</groupId>
     <artifactId>prTrigger</artifactId>
-    <version>3.1</version>
+    <version>3.2</version>
 
     <organization>
         <name>Rich Relevance</name>
@@ -19,9 +19,9 @@
     <packaging>atlassian-plugin</packaging>
 
     <properties>
-        <stash.version>2.10.1</stash.version>
-        <stash.data.version>2.10.1</stash.data.version>
-        <amps.version>4.2.12</amps.version>
+        <stash.version>3.1.3</stash.version>
+        <stash.data.version>3.1.3</stash.data.version>
+        <amps.version>5.0.3</amps.version>
         <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
